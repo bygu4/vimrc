@@ -80,6 +80,10 @@ else
     set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
 endif
 
+" Show global and relative line number
+set number
+set relativenumber
+
 " Always show current mode and cursor position
 set showmode
 set ruler
@@ -124,7 +128,7 @@ set mat=2
 set noerrorbells
 set novisualbell
 set t_vb=
-set tm=500
+set tm=512
 
 " Properly disable sound on errors on MacVim
 if has("gui_macvim")
@@ -159,12 +163,12 @@ if !has('gui_running')
     set t_Cs=
 endif
 
+set background=dark
+
 try
     colorscheme desert
 catch
 endtry
-
-set background=dark
 
 " Set extra options when running in GUI mode
 if has("gui_running")
@@ -337,8 +341,8 @@ xnoremap p "_dP
 " Enable spell checking by default
 set spell
 
-" Pressing ,c will toggle and untoggle spell checking
-map <leader>c :setlocal spell!<cr>
+" Pressing ,sc will toggle and untoggle spell checking
+map <leader>sc :setlocal spell!<cr>
 
 " Shortcuts using <leader>
 map <leader>sn ]s
