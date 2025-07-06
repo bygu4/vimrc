@@ -37,6 +37,7 @@ set history=512
 set showcmd
 
 " Enable filetype plugins
+filetype on
 filetype plugin on
 filetype indent on
 
@@ -219,6 +220,18 @@ set ai "Auto indent
 set si "Smart indent
 set wrap "Wrap lines
 
+" Show spaces as dots and tabs as arrows
+set listchars=space:·,tab:>-
+set list
+
+" Restore end of line symbol on write
+set fixeol
+
+" Remove trailing whitespace on save
+if has('autocmd')
+    autocmd BufWritePre * :%s/\s\+$//e
+endif
+
 
 """"""""""""""""""""""""""""""
 " => Visual mode related
@@ -320,11 +333,6 @@ if has("mac") || has("macunix")
   vmap <D-k> <M-k>
 endif
 
-" Remove trailing whitespace on save
-if has('autocmd')
-    autocmd BufWritePre * :%s/\s\+$//e
-endif
-
 " Press ctrl-x for global replace
 nnoremap <C-x> :%s///g
 
@@ -342,7 +350,7 @@ xnoremap p "_dP
 set spell
 
 " Pressing ,sc will toggle and untoggle spell checking
-map <leader>sc :setlocal spell!<cr>
+map <silent> <leader>sc :setlocal spell!<cr>
 
 " Shortcuts using <leader>
 map <leader>sn ]s
@@ -354,14 +362,11 @@ map <leader>s? z=
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Misc
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Remove the Windows ^M - when the encodings gets messed up
-noremap <Leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
-
 " Quickly open a buffer for scribble
 map <leader>q :e ~/buffer<cr>
 
 " Quickly open a markdown buffer for scribble
-map <leader>x :e ~/buffer.md<cr>
+map <leader>m :e ~/buffer.md<cr>
 
 " Toggle paste mode on and off
 map <leader>pp :setlocal paste!<cr>
@@ -419,4 +424,3 @@ function! VisualSelection(direction, extra_filter) range
     let @/ = l:pattern
     let @" = l:saved_reg
 endfunction
-
