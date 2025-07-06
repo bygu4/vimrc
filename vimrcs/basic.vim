@@ -31,7 +31,10 @@
 " => General
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Sets how many lines of history VIM has to remember
-set history=500
+set history=512
+
+" Show command in bottom of the screen
+set showcmd
 
 " Enable filetype plugins
 filetype plugin on
@@ -45,8 +48,8 @@ au FocusGained,BufEnter * silent! checktime
 " like <leader>w saves the current file
 let mapleader = ","
 
-" Fast saving
-nmap <leader>w :w!<cr>
+" Fast saving with ctrl-s
+nmap <C-s> :w!<cr>
 
 " :W sudo saves the file
 " (useful for handling the permission-denied error)
@@ -67,17 +70,21 @@ source $VIMRUNTIME/menu.vim
 
 " Turn on the Wild menu
 set wildmenu
+set wildmode=list:longest
 
 " Ignore compiled files
-set wildignore=*.o,*~,*.pyc
+set wildignore=*.o,*.dll,*.exe,*.docx,*.jpg,*.png,*.gif,*.pdf,*.pyc,*.flv,*.img,*.xlsx
 if has("win16") || has("win32")
     set wildignore+=.git\*,.hg\*,.svn\*
 else
     set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
 endif
 
-" Always show current position
+" Always show current mode and cursor position
+set showmode
 set ruler
+set cursorline
+set cursorcolumn
 
 " Height of the command bar
 set cmdheight=1
@@ -95,8 +102,8 @@ set ignorecase
 " When searching try to be smart about cases
 set smartcase
 
-" Highlight search results
-set hlsearch
+" Don't highlight search results
+set nohlsearch
 
 " Makes search act like search in modern browsers
 set incsearch
@@ -142,6 +149,16 @@ if $COLORTERM == 'gnome-terminal'
     set t_Co=256
 endif
 
+" Use 24-bit colors if possible
+if has('termguicolors')
+    set termguicolors
+endif
+
+" Use straight underlines in terminal
+if !has('gui_running')
+    set t_Cs=
+endif
+
 try
     colorscheme desert
 catch
@@ -157,7 +174,10 @@ if has("gui_running")
     set guitablabel=%M\ %t
 endif
 
-" Set utf8 as standard encoding and en_US as the standard language
+" Disable compatibility with vi
+set nocompatible
+
+" Set utf8 as standard encoding
 set encoding=utf8
 
 " Use Unix as the standard file type
@@ -170,8 +190,9 @@ set ffs=unix,dos,mac
 " Turn backup off, since most stuff is in SVN, git etc. anyway...
 set nobackup
 set nowb
-set noswapfile
 
+" Set swap update time to 100 milliseconds
+set updatetime=100
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Text, tab and indent related
@@ -188,7 +209,7 @@ set tabstop=4
 
 " Linebreak on 500 characters
 set lbr
-set tw=500
+set tw=256
 
 set ai "Auto indent
 set si "Smart indent
@@ -213,6 +234,12 @@ map <C-space> ?
 
 " Disable highlight when <leader><cr> is pressed
 map <silent> <leader><cr> :noh<cr>
+
+" Center the window on cursor when scrolling
+map <C-u> <C-u>zz
+map <C-d> <C-d>zz
+map <C-f> <C-f>zz
+map <C-b> <C-b>zz
 
 " Smart way to move between windows
 map <C-j> <C-W>j
@@ -289,25 +316,29 @@ if has("mac") || has("macunix")
   vmap <D-k> <M-k>
 endif
 
-" Delete trailing white space on save, useful for some filetypes ;)
-fun! CleanExtraSpaces()
-    let save_cursor = getpos(".")
-    let old_query = getreg('/')
-    silent! %s/\s\+$//e
-    call setpos('.', save_cursor)
-    call setreg('/', old_query)
-endfun
-
-if has("autocmd")
-    autocmd BufWritePre *.txt,*.js,*.py,*.wiki,*.sh,*.coffee :call CleanExtraSpaces()
+" Remove trailing whitespace on save
+if has('autocmd')
+    autocmd BufWritePre * :%s/\s\+$//e
 endif
 
+" Press ctrl-x for global replace
+nnoremap <C-x> :%s///g
+
+" Press ,x to globally replace word under the cursor
+nnoremap <leader>x :%s/\<<C-r><C-w>\>//g
+
+" Don't overwrite the clipboard on paste in visual mode
+xnoremap p "_dP
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Spell checking
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Pressing ,ss will toggle and untoggle spell checking
-map <leader>ss :setlocal spell!<cr>
+
+" Enable spell checking by default
+set spell
+
+" Pressing ,c will toggle and untoggle spell checking
+map <leader>c :setlocal spell!<cr>
 
 " Shortcuts using <leader>
 map <leader>sn ]s
@@ -384,3 +415,4 @@ function! VisualSelection(direction, extra_filter) range
     let @/ = l:pattern
     let @" = l:saved_reg
 endfunction
+
