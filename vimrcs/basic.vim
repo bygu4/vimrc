@@ -49,6 +49,16 @@ au FocusGained,BufEnter * silent! checktime
 " like <leader>w saves the current file
 let mapleader = ","
 
+" Disable arrow keys
+noremap <up> <nop>
+noremap <down> <nop>
+noremap <right> <nop>
+noremap <left> <nop>
+inoremap <up> <nop>
+inoremap <down> <nop>
+inoremap <right> <nop>
+inoremap <left> <nop>
+
 " Fast saving with ctrl-s
 nmap <C-s> :w!<cr>
 
