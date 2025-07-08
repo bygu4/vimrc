@@ -93,9 +93,10 @@ let g:NERDTreeIgnore = ['\.pyc$', '__pycache__', 'node_modules']
 let g:NERDTreeWinSize=36
 let g:NERDTreeShowHidden=1
 let g:NERDTreeFileLines=1
-map <C-_> :NERDTreeToggle<cr>
-map <leader>nb :NERDTreeFromBookmark<Space>
-map <leader>nf :NERDTreeFind<cr>
+
+map <silent> <C-_> :NERDTreeToggle<cr>
+map <silent> <leader>nb :NERDTreeFromBookmark<Space>
+map <silent> <leader>nf :NERDTreeFind<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -143,6 +144,9 @@ let g:airline#extensions#branch#vcs_priority=['git', 'mercurial']
 let g:airline#extensions#branch#displayed_head_limit=32
 let g:airline#extensions#branch#format=0
 
+" Enable ALE support
+let g:airline#extensions#ale#enabled=1
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Vimroom
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -153,30 +157,53 @@ nnoremap <silent> <leader>z :Goyo<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Ale (syntax checker and linter)
+" => ale
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:ale_linters = {
-\   'javascript': ['eslint'],
-\   'python': ['flake8'],
-\   'go': ['go', 'golint', 'errcheck']
+\   'c': ['clang', 'clangd', 'clang-format', 'gcc'],
+\   'python': ['ruff', 'ruff-format', 'mypy', 'pyright'],
+\   'make': ['checkmake'],
+\   'cmake': ['cmake-format'],
+\   'json': ['clang-format', 'spectral', 'prettier'],
+\   'yaml': ['spectral', 'prettier']
 \}
 
+" Use highlights instead of signs
+let g:ale_set_signs=0
+let g:ale_set_highlights=1
+
+" Hover settings
+let g:ale_hover_cursor=1
+let g:ale_hover_to_floating_preview=1
+
+" Showing hover information
+nmap <silent> <leader>w <Plug>(ale_hover)
+
+" Navigation between errors
 nmap <silent> <leader>a <Plug>(ale_next_wrap)
+nmap <silent> <leader>A <Plug>(ale_previous_wrap)
 
-" Disabling highlighting
-let g:ale_set_highlights = 0
+" Navigation between definitions
+nmap <silent> <leader>df <Plug>(ale_go_to_definition)
+nmap <silent> <leader>dt <Plug>(ale_go_to_type_definition)
+nmap <silent> <leader>im <Plug>(ale_go_to_implementation)
 
-" Only run linting when saving the file
-let g:ale_lint_on_text_changed = 'never'
-let g:ale_lint_on_enter = 0
-let g:ale_virtualtext_cursor = 'disabled'
+" Reference search
+nmap <silent> <leader>fr <Plug>(ale_find_references)
+
+" Symbol search
+nmap <leader>ss :ALESymbolSearch<space>
+
+" Refactoring
+nmap <silent> <leader>rn :ALERename<cr>
+nmap <silent> <leader>rf :ALEFileRename<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Git gutter (Git diff)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:gitgutter_enabled=1
-nnoremap <silent> <leader>d :GitGutterToggle<cr>
+nnoremap <silent> <leader>g :GitGutterToggle<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
