@@ -99,7 +99,6 @@ set relativenumber
 set showmode
 set ruler
 set cursorline
-set cursorcolumn
 
 " Height of the command bar
 set cmdheight=1
@@ -275,8 +274,9 @@ map <leader>bd :Bclose<cr>:tabclose<cr>gT
 " Close all the buffers
 map <leader>ba :bufdo bd<cr>
 
-map <leader>l :bnext<cr>
-map <leader>h :bprevious<cr>
+" Move between buffers
+map <silent> <leader>l :bnext<cr>
+map <silent> <leader>h :bprevious<cr>
 
 " Useful mappings for managing tabs
 map <leader>tn :tabnew<cr>
