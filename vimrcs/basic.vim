@@ -227,11 +227,6 @@ set list
 " Restore end of line symbol on write
 set fixeol
 
-" Remove trailing whitespace on save
-if has('autocmd')
-    autocmd BufWritePre * :%s/\s\+$//e
-endif
-
 
 """"""""""""""""""""""""""""""
 " => Visual mode related

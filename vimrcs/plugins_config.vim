@@ -168,9 +168,19 @@ let g:ale_linters = {
 \   'yaml': ['spectral', 'prettier']
 \}
 
+let g:ale_fixers = {
+\   '*': ['trim_whitespace', 'remove_trailing_lines']
+\}
+
 " Use highlights instead of signs
 let g:ale_set_signs=0
 let g:ale_set_highlights=1
+
+" Run fixes on save
+let g:ale_fix_on_save=1
+
+" Enable completion
+let g:ale_completion_enabled=1
 
 " Hover settings
 let g:ale_hover_cursor=1
