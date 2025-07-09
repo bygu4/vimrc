@@ -89,10 +89,48 @@ set grepprg=/bin/grep\ -nH
 " => Nerd Tree
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:NERDTreeWinPos = "right"
-let g:NERDTreeIgnore = ['\.pyc$', '__pycache__', 'node_modules']
 let g:NERDTreeWinSize=36
 let g:NERDTreeShowHidden=1
 let g:NERDTreeFileLines=1
+
+let g:NERDTreeIgnore = [
+\   '\~$',
+\   '\.swp$',
+\   '\.d$',
+\   '\.o$',
+\   '\.ko$',
+\   '\.obj$',
+\   '\.elf$',
+\   '\.ilk$',
+\   '\.map$',
+\   '\.exp$',
+\   '\.lib$',
+\   '\.a$',
+\   '\.la$',
+\   '\.lo$',
+\   '\.dll$',
+\   '\.so$',
+\   '\.so.',
+\   '\.exe$',
+\   '\.out$',
+\   '\.app$',
+\   '\.hex$',
+\   '\.su$',
+\   '\.idb$',
+\   '\.pdb$',
+\   '\.mod$',
+\   '\.mod.',
+\   '\.cmd$',
+\   '\.pyc$',
+\   '^modules.order$',
+\   '^Module.symvers$',
+\   '^dkms.conf$',
+\   '^.git$',
+\   '^.cache$',
+\   '^__pycache__$',
+\   '^compile_commands.json$',
+\   '^node_modules$',
+\]
 
 map <silent> <C-_> :NERDTreeToggle<cr>
 map <silent> <leader>nb :NERDTreeFromBookmark<Space>
@@ -165,7 +203,7 @@ let g:ale_linters = {
 \   'make': ['checkmake'],
 \   'cmake': ['cmake-format'],
 \   'json': ['clang-format', 'spectral', 'prettier'],
-\   'yaml': ['spectral', 'prettier']
+\   'yaml': ['spectral', 'prettier'],
 \}
 
 let g:ale_fixers = {
