@@ -213,6 +213,7 @@ nmap <silent> <leader>rf :ALEFileRename<cr>
 " => Git gutter (Git diff)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:gitgutter_enabled=1
+let g:gitgutter_preview_win_floating=1
 
 nnoremap <silent> <leader>gt :GitGutterToggle<cr>
 nnoremap <silent> <leader>gp <Plug>(GitGutterPreviewHunk)
