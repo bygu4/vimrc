@@ -132,9 +132,10 @@ let g:NERDTreeIgnore = [
 \   '^node_modules$',
 \]
 
-map <silent> <C-_> :NERDTreeToggle<cr>
-map <silent> <leader>nb :NERDTreeFromBookmark<Space>
+map <silent> <C-_> :NERDTreeToggle \| NERDTreeRefresh<cr>
+map <silent> <leader>nr :NERDTreeRefresh<cr>
 map <silent> <leader>nf :NERDTreeFind<cr>
+map <leader>nb :NERDTreeFromBookmark<space>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
