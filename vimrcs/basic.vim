@@ -62,6 +62,9 @@ inoremap <left> <nop>
 " Fast saving with ctrl-s
 nmap <C-s> :w!<cr>
 
+" Save all buffers with ,s
+map <leader>s :wa!<cr>
+
 " :W sudo saves the file
 " (useful for handling the permission-denied error)
 command! W execute 'w !sudo tee % > /dev/null' <bar> edit!

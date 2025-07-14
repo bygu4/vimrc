@@ -28,14 +28,14 @@ let g:bufExplorerDefaultHelp=0
 let g:bufExplorerShowRelativePath=1
 let g:bufExplorerFindActive=1
 let g:bufExplorerSortBy='name'
-map <leader>o :BufExplorer<cr>
+map <silent> <leader>o :BufExplorer<cr>
 
 
 """"""""""""""""""""""""""""""
 " => MRU plugin
 """"""""""""""""""""""""""""""
 let MRU_Max_Entries = 400
-map <leader>f :MRU<CR>
+map <silent> <leader>u :MRU<CR>
 
 
 """"""""""""""""""""""""""""""
@@ -57,7 +57,7 @@ let g:ctrlp_map = '<C-f>'
 map <leader>j :CtrlP<cr>
 
 " Quickly find and open a buffer
-map <leader>b :CtrlPBuffer<cr>
+map <silent> <leader>fb :CtrlPBuffer<cr>
 
 let g:ctrlp_max_height = 20
 let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git\|^\.coffee'
@@ -244,7 +244,7 @@ nmap <silent> <leader>im <Plug>(ale_go_to_implementation)
 nmap <silent> <leader>fr <Plug>(ale_find_references)
 
 " Symbol search
-nmap <leader>ss :ALESymbolSearch<space>
+nmap <leader>fs :ALESymbolSearch<space>
 
 " Refactoring
 nmap <silent> <leader>rn :ALERename<cr>
@@ -257,10 +257,10 @@ nmap <silent> <leader>rf :ALEFileRename<cr>
 let g:gitgutter_enabled=1
 let g:gitgutter_preview_win_floating=1
 
-nnoremap <silent> <leader>gt :GitGutterToggle<cr>
-nnoremap <silent> <leader>gp <Plug>(GitGutterPreviewHunk)
-nnoremap <silent> <leader>gs <Plug>(GitGutterStageHunk)
-nnoremap <silent> <leader>gu <Plug>(GitGutterUndoHunk)
+noremap <silent> <leader>gt :GitGutterToggle<cr>
+noremap <silent> <leader>gp <Plug>(GitGutterPreviewHunk)
+noremap <silent> <leader>gs <Plug>(GitGutterStageHunk)
+noremap <silent> <leader>gu <Plug>(GitGutterUndoHunk)
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
