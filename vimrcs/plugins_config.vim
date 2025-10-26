@@ -200,6 +200,7 @@ nnoremap <silent> <leader>z :Goyo<cr>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:ale_linters = {
 \   'c': ['clang', 'clangd', 'clang-format', 'gcc'],
+\   'cpp': ['clang', 'clangd', 'clang-format', 'gcc'],
 \   'rust': ['cargo', 'rustc', 'rustfmt'],
 \   'python': ['ruff', 'ruff-format', 'mypy', 'pyright'],
 \   'make': ['checkmake'],
@@ -211,6 +212,7 @@ let g:ale_linters = {
 let g:ale_fixers = {
 \   '*': ['trim_whitespace', 'remove_trailing_lines'],
 \   'c': ['clang-format'],
+\   'cpp': ['clang-format'],
 \   'rust': ['rustfmt'],
 \}
 
