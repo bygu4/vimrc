@@ -121,6 +121,7 @@ Notes:
   * `joker`
 * CloudFormation
   * `cfn-python-lint`
+  * `checkov`
 * CMake
   * `cmake-format`
   * `cmake-lint`
@@ -205,6 +206,7 @@ Notes:
   * `fish` (-n flag)
   * `fish_indent`
 * Fortran
+  * `fortitude`
   * `gcc`
   * `language_server`
 * Fountain
@@ -334,6 +336,7 @@ Notes:
   * `xo`
 * Jinja
   * djlint
+  * j2lint
 * JSON
   * `VSCode JSON language server`
   * `biome`
@@ -471,6 +474,7 @@ Notes:
 * Pawn
   * `uncrustify`
 * Perl
+  * `languageserver`
   * `perl -c`
   * `perl-critic`
   * `perltidy`
@@ -698,6 +702,7 @@ Notes:
   * `thriftcheck`
 * TOML
   * `dprint`
+  * `tombi`
 * TypeScript
   * `biome`
   * `cspell`
@@ -722,6 +727,7 @@ Notes:
   * `hdl-checker`
   * `iverilog`
   * slang
+  * `verible`
   * `verilator`
   * `vlog`
   * `xvlog`
