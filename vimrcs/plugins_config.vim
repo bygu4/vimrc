@@ -199,14 +199,14 @@ nnoremap <silent> <leader>z :Goyo<cr>
 " => ale
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:ale_linters = {
-\   'c': ['clang', 'clangd', 'clang-format', 'gcc'],
-\   'cpp': ['clang', 'clangd', 'clang-format', 'gcc'],
-\   'rust': ['cargo', 'rustc', 'rustfmt'],
-\   'python': ['ruff', 'ruff-format', 'mypy', 'pyright'],
+\   'c': ['gcc', 'clang', 'clangd'],
+\   'cpp': ['gcc', 'clang', 'clangd'],
+\   'rust': ['cargo', 'rustc', 'rust-analyzer'],
+\   'python': ['ruff', 'mypy', 'pyright'],
+\   'bash': ['shellcheck'],
+\   'json': ['spectral'],
+\   'yaml': ['spectral'],
 \   'make': ['checkmake'],
-\   'cmake': ['cmake-format'],
-\   'json': ['clang-format', 'spectral', 'prettier'],
-\   'yaml': ['spectral', 'prettier'],
 \}
 
 let g:ale_fixers = {
@@ -214,6 +214,11 @@ let g:ale_fixers = {
 \   'c': ['clang-format'],
 \   'cpp': ['clang-format'],
 \   'rust': ['rustfmt'],
+\   'python': ['ruff', 'ruff_format'],
+\   'bash': ['shfmt'],
+\   'json': ['prettier'],
+\   'yaml': ['prettier'],
+\   'html': ['prettier'],
 \}
 
 let g:ale_c_clangformat_use_local_file=1
