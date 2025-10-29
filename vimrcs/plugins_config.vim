@@ -201,7 +201,7 @@ nnoremap <silent> <leader>z :Goyo<cr>
 let g:ale_linters = {
 \   'c': ['gcc', 'clang', 'clangd'],
 \   'cpp': ['gcc', 'clang', 'clangd'],
-\   'rust': ['cargo', 'rustc', 'rust-analyzer'],
+\   'rust': ['cargo', 'rustc', 'analyzer'],
 \   'python': ['ruff', 'mypy', 'pyright'],
 \   'bash': ['shellcheck'],
 \   'json': ['spectral'],
