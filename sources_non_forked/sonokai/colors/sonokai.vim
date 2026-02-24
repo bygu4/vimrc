@@ -10,7 +10,7 @@
 let s:configuration = sonokai#get_configuration()
 let s:palette = sonokai#get_palette(s:configuration.style, s:configuration.colors_override)
 let s:path = expand('<sfile>:p') " the path of this script
-let s:last_modified = 'Mon Aug 18 10:45:52 UTC 2025'
+let s:last_modified = 'Sun Jan  4 08:48:27 UTC 2026'
 let g:sonokai_loaded_file_types = []
 
 if !(exists('g:colors_name') && g:colors_name ==# 'sonokai' && s:configuration.better_performance)
@@ -28,7 +28,7 @@ endif
 " }}}
 " Common Highlight Groups: {{{
 " UI: {{{
-if s:configuration.transparent_background >= 1
+if s:configuration.transparent_background
   call sonokai#highlight('Normal', s:palette.fg, s:palette.none)
   call sonokai#highlight('NormalNC', s:palette.fg, s:palette.none)
   call sonokai#highlight('Terminal', s:palette.fg, s:palette.none)
@@ -70,7 +70,7 @@ call sonokai#highlight('ColorColumn', s:palette.none, s:palette.bg1)
 call sonokai#highlight('Conceal', s:palette.grey_dim, s:palette.none)
 if s:configuration.cursor ==# 'auto'
   call sonokai#highlight('Cursor', s:palette.none, s:palette.none, 'reverse')
-else
+elseif s:configuration.cursor != ''
   call sonokai#highlight('Cursor', s:palette.bg0, s:palette[s:configuration.cursor])
 endif
 highlight! link vCursor Cursor
@@ -127,15 +127,21 @@ call sonokai#highlight('PmenuThumb', s:palette.none, s:palette.grey)
 if s:configuration.float_style ==# 'dim'
   call sonokai#highlight('NormalFloat', s:palette.fg, s:palette.bg_dim)
   call sonokai#highlight('FloatBorder', s:palette.grey, s:palette.bg_dim)
-  call sonokai#highlight('FloatTitle', s:palette.red, s:palette.bg_dim, 'bold')
-elseif s:configuration.float_style ==# 'none'
-  call sonokai#highlight('NormalFloat', s:palette.fg, s:palette.none)
-  call sonokai#highlight('FloatBorder', s:palette.grey, s:palette.none)
-  call sonokai#highlight('FloatTitle', s:palette.red, s:palette.none, 'bold')
+  call sonokai#highlight('FloatTitle', s:palette.red, s:palette.bg0, 'bold')
+elseif s:configuration.float_style ==# 'blend'
+  if s:configuration.transparent_background
+    highlight! link NormalFloat Normal
+    highlight! link FloatBorder Grey
+    call sonokai#highlight('FloatTitle', s:palette.red, s:palette.none, 'bold')
+  else
+    call sonokai#highlight('NormalFloat', s:palette.fg, s:palette.bg0)
+    call sonokai#highlight('FloatBorder', s:palette.grey, s:palette.bg0)
+    call sonokai#highlight('FloatTitle', s:palette.red, s:palette.bg1, 'bold')
+  endif
 else
   call sonokai#highlight('NormalFloat', s:palette.fg, s:palette.bg2)
   call sonokai#highlight('FloatBorder', s:palette.grey, s:palette.bg2)
-  call sonokai#highlight('FloatTitle', s:palette.red, s:palette.bg2, 'bold')
+  call sonokai#highlight('FloatTitle', s:palette.red, s:palette.bg4, 'bold')
 endif
 call sonokai#highlight('Question', s:palette.yellow, s:palette.none)
 if s:configuration.spell_foreground ==# 'none'
@@ -713,6 +719,12 @@ endif
 highlight! link TSModuleInfoGood Green
 highlight! link TSModuleInfoBad Red
 " }}}
+" nvim-treesitter/nvim-treesitter-context {{{
+call sonokai#highlight('TreesitterContext', s:palette.fg, s:palette.bg2)
+if s:configuration.dim_inactive_windows && !s:configuration.transparent_background
+  call sonokai#highlight('TreesitterContextLineNumber', s:palette.grey_dim, s:palette.bg0)
+endif
+" }}}
 " github/copilot.vim {{{
 highlight! link CopilotSuggestion Grey
 " }}}
@@ -1140,6 +1152,14 @@ highlight! link BookmarkAnnotationSign GreenSign
 highlight! link BookmarkLine DiffChange
 highlight! link BookmarkAnnotationLine DiffAdd
 " }}}
+" ggml-org/llama.vim {{{
+highlight! link llama_hl_fim_hint Grey
+highlight! link llama_hl_fim_info InlayHints
+highlight! link llama_hl_inst_src Visual
+highlight! link llama_hl_inst_virt_proc Grey
+highlight! link llama_hl_inst_virt_gen Grey
+highlight! link llama_hl_inst_virt_ready Grey
+" }}}
 if has('nvim')
 " hrsh7th/nvim-cmp {{{
 call sonokai#highlight('CmpItemAbbrMatch', s:palette.green, s:palette.none, 'bold')
@@ -1341,11 +1361,16 @@ call sonokai#highlight('InclineNormalNC', s:palette.grey, s:palette.bg2)
 " }}}
 " echasnovski/mini.nvim {{{
 call sonokai#highlight('MiniAnimateCursor', s:palette.none, s:palette.none, 'reverse,nocombine')
-call sonokai#highlight('MiniFilesFile', s:palette.fg, s:palette.none)
 if s:configuration.float_style ==# 'dim'
-  call sonokai#highlight('MiniFilesTitleFocused', s:palette.green, s:palette.bg_dim, 'bold')
+  call sonokai#highlight('MiniFilesTitle', s:palette.grey, s:palette.bg0)
+elseif s:configuration.float_style ==# 'blend'
+  if s:configuration.transparent_background
+    highlight! link MiniFilesTitle Grey
+  else
+    call sonokai#highlight('MiniFilesTitle', s:palette.grey, s:palette.bg1)
+  endif
 else
-  call sonokai#highlight('MiniFilesTitleFocused', s:palette.green, s:palette.bg2, 'bold')
+  call sonokai#highlight('MiniFilesTitle', s:palette.grey, s:palette.bg4)
 endif
 call sonokai#highlight('MiniHipatternsFixme', s:palette.bg0, s:palette.red, 'bold')
 call sonokai#highlight('MiniHipatternsHack', s:palette.bg0, s:palette.yellow, 'bold')
@@ -1364,10 +1389,21 @@ call sonokai#highlight('MiniIndentscopePrefix', s:palette.none, s:palette.none, 
 call sonokai#highlight('MiniJump2dSpot', s:palette.red, s:palette.none, 'bold,nocombine')
 call sonokai#highlight('MiniJump2dSpotAhead', s:palette.blue, s:palette.none, 'nocombine')
 call sonokai#highlight('MiniJump2dSpotUnique', s:palette.yellow, s:palette.none, 'bold,nocombine')
+highlight! link MiniPickPrompt NormalFloat
 if s:configuration.float_style ==# 'dim'
-  call sonokai#highlight('MiniPickPrompt', s:palette.blue, s:palette.bg_dim)
+  call sonokai#highlight('MiniPickPromptPrefix', s:palette.red, s:palette.bg_dim)
+  call sonokai#highlight('MiniPickPromptCaret', s:palette.blue, s:palette.bg_dim)
+elseif s:configuration.float_style ==# 'blend'
+  if s:configuration.transparent_background
+    highlight! link MiniPickPromptPrefix Red
+    highlight! link MiniPickPromptCaret Blue
+  else
+    call sonokai#highlight('MiniPickPromptPrefix', s:palette.red, s:palette.bg0)
+    call sonokai#highlight('MiniPickPromptCaret', s:palette.blue, s:palette.bg0)
+  endif
 else
-  call sonokai#highlight('MiniPickPrompt', s:palette.blue, s:palette.bg2)
+  call sonokai#highlight('MiniPickPromptPrefix', s:palette.red, s:palette.bg2)
+  call sonokai#highlight('MiniPickPromptCaret', s:palette.blue, s:palette.bg2)
 endif
 call sonokai#highlight('MiniStarterCurrent', s:palette.none, s:palette.none, 'nocombine')
 call sonokai#highlight('MiniStatuslineDevinfo', s:palette.fg, s:palette.bg3)
@@ -1419,12 +1455,6 @@ highlight! link MiniDiffOverDelete DiffDelete
 highlight! link MiniDiffSignAdd GreenSign
 highlight! link MiniDiffSignChange BlueSign
 highlight! link MiniDiffSignDelete RedSign
-highlight! link MiniFilesBorder FloatBorder
-highlight! link MiniFilesBorderModified DiagnosticFloatingWarn
-highlight! link MiniFilesCursorLine CursorLine
-highlight! link MiniFilesDirectory Directory
-highlight! link MiniFilesNormal NormalFloat
-highlight! link MiniFilesTitle FloatTitle
 highlight! link MiniIndentscopeSymbol Grey
 highlight! link MiniJump Search
 highlight! link MiniJump2dDim Comment
@@ -1436,18 +1466,7 @@ highlight! link MiniNotifyBorder FloatBorder
 highlight! link MiniNotifyNormal NormalFloat
 highlight! link MiniNotifyTitle FloatTitle
 highlight! link MiniOperatorsExchangeFrom IncSearch
-highlight! link MiniPickBorder FloatBorder
-highlight! link MiniPickBorderBusy DiagnosticFloatingWarn
-highlight! link MiniPickBorderText FloatTitle
-highlight! link MiniPickHeader DiagnosticFloatingHint
-highlight! link MiniPickIconDirectory Directory
-highlight! link MiniPickIconFile MiniPickNormal
-highlight! link MiniPickMatchCurrent CursorLine
 highlight! link MiniPickMatchMarked DiffChange
-highlight! link MiniPickMatchRanges DiagnosticFloatingHint
-highlight! link MiniPickNormal NormalFloat
-highlight! link MiniPickPreviewLine CursorLine
-highlight! link MiniPickPreviewRegion IncSearch
 highlight! link MiniStarterFooter Yellow
 highlight! link MiniStarterHeader Purple
 highlight! link MiniStarterInactive Comment
@@ -1663,10 +1682,9 @@ highlight! link NvimTreeFolderIcon Blue
 highlight! link NvimTreeEmptyFolderName Green
 highlight! link NvimTreeOpenedFolderName Green
 highlight! link NvimTreeExecFile Fg
-highlight! link NvimTreeOpenedFile Fg
+highlight! link NvimTreeOpenedHL Fg
 highlight! link NvimTreeSpecialFile Fg
 highlight! link NvimTreeImageFile Fg
-highlight! link NvimTreeMarkdownFile Fg
 highlight! link NvimTreeIndentMarker Grey
 highlight! link NvimTreeGitDirtyIcon Yellow
 highlight! link NvimTreeGitStagedIcon Blue

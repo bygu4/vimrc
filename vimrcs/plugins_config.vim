@@ -139,6 +139,19 @@ map <leader>nb :NERDTreeFromBookmark<space>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Vista
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let g:vista_icon_indent = ["╰─▸ ", "├─▸ "]
+let g:vista_sidebar_position = "vertical botright"
+let g:vista_sidebar_width = 60
+let g:vista_cursor_delay = 250
+let g:vista_echo_cursor_strategy = "scroll"
+let g:vista#renderer#enable_icon = 0
+
+map <silent> <C-\> :Vista!!<cr>
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => vim-multiple-cursors
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:multi_cursor_use_default_mapping=0

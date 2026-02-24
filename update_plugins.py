@@ -56,6 +56,7 @@ editorconfig-vim https://github.com/editorconfig/editorconfig-vim
 dracula https://github.com/dracula/vim
 copilot.vim https://github.com/github/copilot.vim
 sonokai https://github.com/sainnhe/sonokai
+vista.vim https://github.com/liuchengxu/vista.vim
 """.strip()
 
 GITHUB_ZIP = "%s/archive/master.zip"
