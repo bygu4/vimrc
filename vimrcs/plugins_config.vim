@@ -196,6 +196,15 @@ let g:airline#extensions#branch#vcs_priority=['git', 'mercurial']
 let g:airline#extensions#branch#displayed_head_limit=32
 let g:airline#extensions#branch#format=0
 
+" Tabline extension settings
+let g:airline#extensions#tabline#enabled=1
+let g:airline#extensions#tabline#show_close_button=0
+let g:airline#extensions#tabline#show_buffers=0
+let g:airline#extensions#tabline#show_tab_type=0
+let g:airline#extensions#tabline#show_tab_nr=0
+let g:airline#extensions#tabline#show_splits=0
+let g:airline#extensions#tabline#fnamemod=':t'
+
 " Enable ALE support
 let g:airline#extensions#ale#enabled=1
 
