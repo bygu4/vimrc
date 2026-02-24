@@ -89,9 +89,9 @@ set grepprg=/bin/grep\ -nH
 " => Nerd Tree
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:NERDTreeWinPos = "right"
-let g:NERDTreeWinSize=36
-let g:NERDTreeShowHidden=1
-let g:NERDTreeFileLines=1
+let g:NERDTreeWinSize = 40
+let g:NERDTreeShowHidden = 1
+let g:NERDTreeFileLines = 1
 
 let g:NERDTreeIgnore = [
 \   '\~$',
@@ -142,6 +142,7 @@ map <leader>nb :NERDTreeFromBookmark<space>
 " => Vista
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:vista_icon_indent = ["╰─▸ ", "├─▸ "]
+let g:vista_update_on_text_changed = 1
 let g:vista_sidebar_position = "vertical botright"
 let g:vista_sidebar_width = 60
 let g:vista_cursor_delay = 250
@@ -177,7 +178,7 @@ au FileType mako vmap Si S"i${ _(<esc>2f"a) }<esc>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => sonokai
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:sonokai_style='shusia'
+let g:sonokai_style='maia'
 let g:sonokai_better_performance=1
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
