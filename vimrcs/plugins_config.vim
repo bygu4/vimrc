@@ -89,7 +89,7 @@ set grepprg=/bin/grep\ -nH
 " => Nerd Tree
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:NERDTreeWinPos = "right"
-let g:NERDTreeWinSize = 40
+let g:NERDTreeWinSize = max([30, winwidth(0) * 20 / 100])
 let g:NERDTreeShowHidden = 1
 let g:NERDTreeFileLines = 1
 
@@ -139,17 +139,17 @@ map <leader>nb :NERDTreeFromBookmark<space>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Vista
+" => Tagbar
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:vista_icon_indent = ["╰─▸ ", "├─▸ "]
-let g:vista_update_on_text_changed = 1
-let g:vista_sidebar_position = "vertical botright"
-let g:vista_sidebar_width = 60
-let g:vista_cursor_delay = 250
-let g:vista_echo_cursor_strategy = "scroll"
-let g:vista#renderer#enable_icon = 0
+let g:tagbar_position = "vertical botright"
+let g:tagbar_width = max([40, winwidth(0) * 30 / 100])
+let g:tagbar_autofocus = 1
+let g:tagbar_sort = 0
+let g:tagbar_show_tag_linenumbers = 1
+let g:tagbar_show_tag_count = 1
+let g:tagbar_wrap = 2
 
-map <silent> <C-\> :Vista!!<cr>
+map <silent> <C-\> :TagbarToggle<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
