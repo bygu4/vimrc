@@ -29,7 +29,7 @@ vim-snipmate https://github.com/garbas/vim-snipmate
 vim-snippets https://github.com/honza/vim-snippets
 vim-surround https://github.com/tpope/vim-surround
 vim-expand-region https://github.com/terryma/vim-expand-region
-vim-multiple-cursors https://github.com/terryma/vim-multiple-cursors
+vim-visual-multi https://github.com/mg979/vim-visual-multi
 vim-fugitive https://github.com/tpope/vim-fugitive
 vim-rhubarb https://github.com/tpope/vim-rhubarb
 goyo.vim https://github.com/junegunn/goyo.vim
