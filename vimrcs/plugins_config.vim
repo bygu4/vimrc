@@ -251,8 +251,8 @@ let g:ale_hover_to_floating_preview=1
 nmap <silent> <leader>w <Plug>(ale_hover)
 
 " Navigation between errors
-nmap <silent> <leader>a <Plug>(ale_next_wrap)
-nmap <silent> <leader>A <Plug>(ale_previous_wrap)
+nmap <silent> <leader><left> <Plug>(ale_previous_wrap)
+nmap <silent> <leader><right> <Plug>(ale_next_wrap)
 
 " Navigation between definitions
 nmap <silent> <leader>df <Plug>(ale_go_to_definition)

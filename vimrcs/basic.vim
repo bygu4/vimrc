@@ -52,8 +52,8 @@ let mapleader = ","
 " Fast saving with ctrl-s
 nmap <C-s> :w!<cr>
 
-" Save all buffers with ,s
-map <leader>s :wa!<cr>
+" Save all buffers with ,ss
+nmap <leader>ss :wa!<cr>
 
 " :W sudo saves the file
 " (useful for handling the permission-denied error)
@@ -367,7 +367,7 @@ map <leader>q :e ~/buffer<cr>
 map <leader>m :e ~/buffer.md<cr>
 
 " Toggle paste mode on and off
-map <leader>pp :setlocal paste!<cr>
+map <leader>p :setlocal paste!<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
