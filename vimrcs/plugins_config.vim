@@ -283,7 +283,7 @@ noremap <silent> <leader>gu <Plug>(GitGutterUndoHunk)
 
 function! GitGutterDiffOrigToggle()
   if &diff
-    only
+    wincmd p | close
   else
     GitGutterDiffOrig
   endif
