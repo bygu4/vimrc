@@ -32,19 +32,12 @@ map <silent> <leader>o :BufExplorer<cr>
 
 
 """"""""""""""""""""""""""""""
-" => MRU plugin
-""""""""""""""""""""""""""""""
-let MRU_Max_Entries = 400
-map <silent> <leader>u :MRU<CR>
-
-
-""""""""""""""""""""""""""""""
 " => YankStack
 """"""""""""""""""""""""""""""
 let g:yankstack_yank_keys = ['y', 'd']
 
-nmap <C-[> <Plug>yankstack_substitute_older_paste
-nmap <C-]> <Plug>yankstack_substitute_newer_paste
+nmap <C-S-left> <Plug>yankstack_substitute_newer_paste
+nmap <C-S-right> <Plug>yankstack_substitute_older_paste
 
 
 """"""""""""""""""""""""""""""
@@ -53,11 +46,13 @@ nmap <C-]> <Plug>yankstack_substitute_newer_paste
 let g:ctrlp_working_path_mode = 0
 
 " Quickly find and open a file in the current working directory
-let g:ctrlp_map = '<C-f>'
-map <leader>j :CtrlP<cr>
+map <silent> <leader>ff :CtrlP<cr>
 
 " Quickly find and open a buffer
 map <silent> <leader>fb :CtrlPBuffer<cr>
+
+" Search for most recently used files
+map <silent> <leader>fu :CtrlPMRU<cr>
 
 let g:ctrlp_max_height = 20
 let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git\|^\.coffee'
@@ -92,6 +87,7 @@ let g:NERDTreeWinPos = "right"
 let g:NERDTreeWinSize = max([30, winwidth(0) * 20 / 100])
 let g:NERDTreeShowHidden = 1
 let g:NERDTreeFileLines = 1
+let g:NERDTreeQuitOnOpen = 1
 
 let g:NERDTreeIgnore = [
 \   '\~$',
@@ -143,14 +139,13 @@ map <leader>nb :NERDTreeFromBookmark<space>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let g:tagbar_position = "vertical botright"
 let g:tagbar_width = max([40, winwidth(0) * 30 / 100])
-let g:tagbar_autofocus = 1
 let g:tagbar_sort = 0
 let g:tagbar_show_tag_linenumbers = 1
 let g:tagbar_show_tag_count = 1
+let g:tagbar_autoshowtag = 1
 let g:tagbar_wrap = 2
 
 map <silent> <C-\> :TagbarToggle<cr>
-
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => surround.vim config
@@ -192,6 +187,10 @@ let g:airline#extensions#tabline#fnamemod=':t'
 
 " Enable ALE support
 let g:airline#extensions#ale#enabled=1
+
+" Enable Tagbar support
+let g:airline#extensions#tagbar#enabled=1
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Vimroom
