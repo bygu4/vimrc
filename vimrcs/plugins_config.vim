@@ -277,6 +277,15 @@ noremap <silent> <leader>gp <Plug>(GitGutterPreviewHunk)
 noremap <silent> <leader>gs <Plug>(GitGutterStageHunk)
 noremap <silent> <leader>gu <Plug>(GitGutterUndoHunk)
 
+function! GitGutterDiffOrigToggle()
+  if &diff
+    only
+  else
+    GitGutterDiffOrig
+  endif
+endfunction
+
+nnoremap <silent> <leader>gd :call GitGutterDiffOrigToggle()<cr>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => EditorConfig (project-specific EditorConfig rule)

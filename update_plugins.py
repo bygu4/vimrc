@@ -55,6 +55,7 @@ dracula https://github.com/dracula/vim
 copilot.vim https://github.com/github/copilot.vim
 sonokai https://github.com/sainnhe/sonokai
 tagbar https://github.com/preservim/tagbar
+vim-startify https://github.com/mhinz/vim-startify
 """.strip()
 
 GITHUB_ZIP = "%s/archive/master.zip"
