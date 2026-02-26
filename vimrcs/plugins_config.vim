@@ -147,6 +147,10 @@ let g:tagbar_wrap = 2
 
 map <silent> <C-\> :TagbarToggle<cr>
 
+" Open Tagbar on startup
+" Use timer to avoid freezing vim
+autocmd VimEnter * nested call timer_start(100, 'tagbar#OpenWindow')
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => surround.vim config
 " Annotate strings with gettext
