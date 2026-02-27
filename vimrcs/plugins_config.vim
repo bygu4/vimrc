@@ -312,7 +312,9 @@ xnoremap <leader>v :GBrowse!<CR>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Startify
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let g:ascii_header = [
+let s:vim_version = matchstr(execute('version'), 'Vi IMproved \zs\d[^ ]*')
+
+let s:ascii_header = [
             \ "                            ___________ _",
             \ "  \\/                    __/   .::::.-'-(/-/)",
             \ "                     _/:  .::::.-' .-'\\/\\_`*******          __ (_))",
@@ -335,7 +337,17 @@ let g:ascii_header = [
             \ "_____':::::_____________________________________\\__\\______________________",
             \ ]
 
+let s:ascii_footer = [
+            \ "                                        _/      _/  _/",
+            \ " .-.-.  .-.-.  .-.-.  .-.-.  .-.-.     _/      _/      _/_/_/  _/_/",
+            \ "=`. .'==`. .'==`. .'==`. .'==`. .'=    _/     _/  _/  _/    _/    _/",
+            \ "   \"      \"      \"      \"      \"       _/  _/    _/  _/    _/    _/   " . s:vim_version,
+            \ "                                        _/      _/  _/    _/    _/",
+            \ "",
+            \ ]
+
 let g:startify_padding_left = 20
-let g:startify_custom_header = startify#pad(g:ascii_header + startify#fortune#quote())
+let g:startify_custom_header = startify#pad(s:ascii_header + startify#fortune#quote())
+let g:startify_custom_footer = startify#pad(s:ascii_footer)
 
 nmap <leader>~ :Startify<cr>
