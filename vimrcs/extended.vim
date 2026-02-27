@@ -68,6 +68,18 @@ augroup END
 set background=dark
 colorscheme sonokai
 
+let s:is_transparent = 0
+function! ToggleTransparency()
+    if s:is_transparent
+        set background=dark
+        colorscheme sonokai
+        let s:is_transparent = 0
+    else
+        hi Normal guibg=NONE ctermbg=NONE
+        let s:is_transparent = 1
+    endif
+endfunction
+nnoremap <silent> <leader>tt :call ToggleTransparency()<cr>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Fast editing and reloading of vimrc configs
