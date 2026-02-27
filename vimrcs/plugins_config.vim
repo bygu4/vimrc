@@ -92,6 +92,8 @@ let g:NERDTreeQuitOnOpen = 1
 let g:NERDTreeIgnore = [
 \   '\~$',
 \   '\.swp$',
+\   '\.swn$',
+\   '\.swo$',
 \   '\.d$',
 \   '\.o$',
 \   '\.ko$',
@@ -129,6 +131,8 @@ let g:NERDTreeIgnore = [
 \]
 
 map <silent> <C-_> :NERDTreeToggle \| NERDTreeRefresh<cr>
+map <silent> <leader>ng :NERDTreeVCS<cr>
+map <silent> <leader>nc :NERDTreeCWD<cr>
 map <silent> <leader>nr :NERDTreeRefresh<cr>
 map <silent> <leader>nf :NERDTreeFind<cr>
 map <leader>nb :NERDTreeFromBookmark<space>

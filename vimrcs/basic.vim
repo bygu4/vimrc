@@ -268,15 +268,18 @@ map <leader>bd :Bclose<cr>:tabclose<cr>gT
 map <leader>ba :bufdo bd<cr>
 
 " Move between buffers
-map <silent> <leader>l :bnext<cr>
-map <silent> <leader>h :bprevious<cr>
+map <silent> <leader>j :bprevious<cr>
+map <silent> <leader>k :bnext<cr>
+
+" Move between tabs
+map <silent> <leader>h :tabprev<cr>
+map <silent> <leader>l :tabnext<cr>
 
 " Useful mappings for managing tabs
 map <leader>tn :tabnew<cr>
 map <leader>to :tabonly<cr>
 map <leader>tc :tabclose<cr>
 map <leader>tm :tabmove
-map <leader>t<leader> :tabnext<cr>
 
 " Let 'tl' toggle between this and the last accessed tab
 let g:lasttab = 1
