@@ -174,6 +174,9 @@ let g:airline_powerline_fonts=1
 let g:airline_detect_modified=1
 let g:airline_detect_paste=1
 
+let g:airline#parts#ffenc#skip_expected_string='utf-8[unix]'
+let g:airline#extensions#whitespace#enabled = 0
+
 " Airline branch extension settings
 let g:airline#extensions#branch#enabled=1
 let g:airline#extensions#branch#empty_message=''
