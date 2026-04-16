@@ -64,18 +64,24 @@ augroup SpellUnderline
     \   guisp=Purple
 augroup END
 
-" Color scheme
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Color scheme
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 set background=dark
+
+let g:sonokai_style='maia'
+let g:sonokai_better_performance=1
 colorscheme sonokai
 
 let s:is_transparent = 0
 function! ToggleTransparency()
     if s:is_transparent
-        set background=dark
+        let g:sonokai_transparent_background = 0
         colorscheme sonokai
         let s:is_transparent = 0
     else
-        hi Normal guibg=NONE ctermbg=NONE
+        let g:sonokai_transparent_background = 1
+        colorscheme sonokai
         let s:is_transparent = 1
     endif
 endfunction
