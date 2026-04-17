@@ -27,65 +27,6 @@ set guioptions-=R
 set guioptions-=l
 set guioptions-=L
 
-" Override spell check highlighting style
-augroup SpellUnderline
-  autocmd!
-  autocmd ColorScheme *
-    \ highlight SpellBad
-    \   cterm=Underline
-    \   ctermfg=NONE
-    \   ctermbg=NONE
-    \   term=Reverse
-    \   gui=Undercurl
-    \   guisp=SkyBlue
-  autocmd ColorScheme *
-    \ highlight SpellCap
-    \   cterm=Underline
-    \   ctermfg=NONE
-    \   ctermbg=NONE
-    \   term=Reverse
-    \   gui=Undercurl
-    \   guisp=SkyBlue
-  autocmd ColorScheme *
-    \ highlight SpellLocal
-    \   cterm=Underline
-    \   ctermfg=NONE
-    \   ctermbg=NONE
-    \   term=Reverse
-    \   gui=Undercurl
-    \   guisp=Purple
-  autocmd ColorScheme *
-    \ highlight SpellRare
-    \   cterm=Underline
-    \   ctermfg=NONE
-    \   ctermbg=NONE
-    \   term=Reverse
-    \   gui=Undercurl
-    \   guisp=Purple
-augroup END
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Color scheme
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-set background=dark
-
-let g:sonokai_style='maia'
-let g:sonokai_better_performance=1
-colorscheme sonokai
-
-let s:is_transparent = 0
-function! ToggleTransparency()
-    if s:is_transparent
-        let g:sonokai_transparent_background = 0
-        colorscheme sonokai
-        let s:is_transparent = 0
-    else
-        let g:sonokai_transparent_background = 1
-        colorscheme sonokai
-        let s:is_transparent = 1
-    endif
-endfunction
-nnoremap <silent> <leader>tt :call ToggleTransparency()<cr>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Fast editing and reloading of vimrc configs

@@ -159,17 +159,54 @@ map <silent> <C-\> :TagbarToggle<cr>
 vmap Si S(i_<esc>f)
 au FileType mako vmap Si S"i${ _(<esc>2f"a) }<esc>
 
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Color scheme
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+set background=dark
+
+let g:sonokai_style='maia'
+let g:sonokai_better_performance=1
+let s:is_transparent=1
+
+if s:is_transparent
+    let g:airline_theme='transparent'
+    let g:sonokai_transparent_background = 2
+else
+    let g:airline_theme='sonokai'
+    let g:sonokai_transparent_background = 0
+endif
+colorscheme sonokai
+
+function! ToggleTransparency()
+    if s:is_transparent
+        let g:airline_theme='sonokai'
+        let g:sonokai_transparent_background = 0
+        let s:is_transparent = 0
+    else
+        let g:airline_theme='transparent'
+        let g:sonokai_transparent_background = 2
+        let s:is_transparent = 1
+    endif
+    colorscheme sonokai
+endfunction
+nnoremap <silent> <leader>tt :call ToggleTransparency()<cr>
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => airline
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " General settings
-let g:airline_theme='sonokai'
 let g:airline_powerline_fonts=1
 let g:airline_detect_modified=1
 let g:airline_detect_paste=1
 
+let g:airline_left_sep = ''
+let g:airline_left_alt_sep = ''
+let g:airline_right_sep = ''
+let g:airline_right_alt_sep = ''
+
 let g:airline#parts#ffenc#skip_expected_string='utf-8[unix]'
-let g:airline#extensions#whitespace#enabled = 0
+let g:airline#extensions#whitespace#enabled=0
 
 " Airline branch extension settings
 let g:airline#extensions#branch#enabled=1

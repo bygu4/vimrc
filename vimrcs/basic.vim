@@ -36,6 +36,15 @@ set history=512
 " Show command in bottom of the screen
 set showcmd
 
+" Disable compatibility with vi
+set nocompatible
+
+" Set utf8 as standard encoding
+set encoding=utf8
+
+" Use Unix as the standard file type
+set ffs=unix,dos,mac
+
 " Enable filetype plugins
 filetype on
 filetype plugin on
@@ -140,55 +149,6 @@ endif
 
 " Always show signcolumn
 set signcolumn=yes
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Colors and Fonts
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Enable syntax highlighting
-syntax enable
-
-" Set regular expression engine automatically
-set regexpengine=0
-
-" Enable 256 colors palette in Gnome Terminal
-if $COLORTERM == 'gnome-terminal'
-    set t_Co=256
-endif
-
-" Use 24-bit colors if possible
-if has('termguicolors')
-    set termguicolors
-endif
-
-" Use straight underlines in terminal
-if !has('gui_running')
-    set t_Cs=
-endif
-
-set background=dark
-
-try
-    colorscheme desert
-catch
-endtry
-
-" Set extra options when running in GUI mode
-if has("gui_running")
-    set guioptions-=T
-    set guioptions-=e
-    set t_Co=256
-    set guitablabel=%M\ %t
-endif
-
-" Disable compatibility with vi
-set nocompatible
-
-" Set utf8 as standard encoding
-set encoding=utf8
-
-" Use Unix as the standard file type
-set ffs=unix,dos,mac
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -355,6 +315,83 @@ map <leader>sn ]s
 map <leader>sp [s
 map <leader>sa zg
 map <leader>s? z=
+
+" Override spell check highlighting style
+augroup SpellUnderline
+  autocmd!
+  autocmd ColorScheme *
+    \ highlight SpellBad
+    \   cterm=Underline
+    \   ctermfg=NONE
+    \   ctermbg=NONE
+    \   term=Reverse
+    \   gui=Undercurl
+    \   guisp=SkyBlue
+  autocmd ColorScheme *
+    \ highlight SpellCap
+    \   cterm=Underline
+    \   ctermfg=NONE
+    \   ctermbg=NONE
+    \   term=Reverse
+    \   gui=Undercurl
+    \   guisp=SkyBlue
+  autocmd ColorScheme *
+    \ highlight SpellLocal
+    \   cterm=Underline
+    \   ctermfg=NONE
+    \   ctermbg=NONE
+    \   term=Reverse
+    \   gui=Undercurl
+    \   guisp=Purple
+  autocmd ColorScheme *
+    \ highlight SpellRare
+    \   cterm=Underline
+    \   ctermfg=NONE
+    \   ctermbg=NONE
+    \   term=Reverse
+    \   gui=Undercurl
+    \   guisp=Purple
+augroup END
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Colors and Fonts
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Enable syntax highlighting
+syntax enable
+
+" Set regular expression engine automatically
+set regexpengine=0
+
+" Enable 256 colors palette in Gnome Terminal
+if $COLORTERM == 'gnome-terminal'
+    set t_Co=256
+endif
+
+" Use 24-bit colors if possible
+if has('termguicolors')
+    set termguicolors
+endif
+
+" Use straight underlines in terminal
+if !has('gui_running')
+    set t_Cs=
+endif
+
+set background=dark
+
+try
+    colorscheme desert
+catch
+endtry
+
+" Set extra options when running in GUI mode
+if has("gui_running")
+    set guioptions-=T
+    set guioptions-=e
+    set t_Co=256
+    set guitablabel=%M\ %t
+endif
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
