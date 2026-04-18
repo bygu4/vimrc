@@ -28,11 +28,16 @@ set guioptions-=l
 set guioptions-=L
 
 " Correct italics when running tmux
-highlight Comment cterm=italic gui=italic
-
 let &t_ZH="\e[3m"
 let &t_ZR="\e[23m"
 
+" Correct underlines when running tmux
+let &t_Cs = "\e[4:3m"
+let &t_Ce = "\e[4:0m"
+
+if has('patch-8.2.0863')
+    let &t_8u = "\e[58:2:%lu:%lu:%lum"
+endif
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Fast editing and reloading of vimrc configs
