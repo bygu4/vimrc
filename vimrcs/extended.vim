@@ -27,6 +27,12 @@ set guioptions-=R
 set guioptions-=l
 set guioptions-=L
 
+" Correct italics when running tmux
+highlight Comment cterm=italic gui=italic
+
+let &t_ZH="\e[3m"
+let &t_ZR="\e[23m"
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Fast editing and reloading of vimrc configs
