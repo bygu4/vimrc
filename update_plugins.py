@@ -56,6 +56,7 @@ dracula https://github.com/dracula/vim
 copilot.vim https://github.com/github/copilot.vim
 sonokai https://github.com/sainnhe/sonokai
 tagbar https://github.com/preservim/tagbar
+vim-tmux-navigator https://github.com/christoomey/vim-tmux-navigator
 vim-startify https://github.com/mhinz/vim-startify
 """.strip()
 
