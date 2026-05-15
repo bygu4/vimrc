@@ -120,6 +120,7 @@ let g:NERDTreeIgnore = [
 \   '\.mod.',
 \   '\.cmd$',
 \   '\.pyc$',
+\   '\.state$',
 \   '^modules.order$',
 \   '^Module.symvers$',
 \   '^dkms.conf$',
