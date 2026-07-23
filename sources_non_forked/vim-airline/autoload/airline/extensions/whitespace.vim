@@ -1,4 +1,4 @@
-" MIT License. Copyright (c) 2013-2021 Bailey Ling et al.
+" MIT License. Copyright (c) 2013-2026 Bailey Ling, Christian Brabandt et al.
 " vim: et ts=2 sts=2 sw=2
 
 " http://got-ravings.blogspot.com/2008/10/vim-pr0n-statusline-whitespace-flags.html
@@ -13,7 +13,9 @@ let s:searchcount = exists('*searchcount')
 let s:enabled = get(g:, 'airline#extensions#whitespace#enabled', 1)
 let s:skip_check_ft = {'make': ['indent', 'mixed-indent-file'],
       \ 'csv': ['indent', 'mixed-indent-file'],
-      \ 'mail': ['trailing']}
+      \ 'mail': ['trailing'],
+      \ 'diff': ['trailing'],
+      \ 'gitcommit': ['trailing']}
 
 function! s:check_mixed_indent()
   let indent_algo = get(g:, 'airline#extensions#whitespace#mixed_indent_algo', 0)

@@ -47,8 +47,7 @@ section|meaning (example)
   X    | filetype  (vim)
   Y    | file encoding[fileformat] (utf-8[unix])
   Z    | current position in the file
- [...] | additional sections (warning/errors/statistics) from external plugins (e.g. YCM, syntastic, ...)
-       | can be shown on a second line optionally (Vim only)
+ [...] | additional sections (warning/errors/statistics) from external plugins (e.g. YCM, syntastic, ...)<br>can be shown on a second line optionally (Vim only)
 
 The information in Section Z looks like this:
 
@@ -310,7 +309,7 @@ If you are interested in becoming a maintainer (we always welcome more maintaine
 
 # License
 
-[MIT License][58]. Copyright (c) 2013-2021 Bailey Ling & Contributors.
+[MIT License][58]. Copyright (c) 2013-2026 Bailey Ling & Contributors.
 
 [1]: https://github.com/Lokaltog/vim-powerline
 [2]: https://github.com/powerline/powerline
