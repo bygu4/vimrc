@@ -22,7 +22,41 @@ call pathogen#helptags()
 
 
 """"""""""""""""""""""""""""""
-" => bufExplorer plugin
+" => fzf.vim
+""""""""""""""""""""""""""""""
+map <silent> <leader>zz :Rg<cr>
+map <silent> <leader>zf :Files<cr>
+map <silent> <leader>zg :GFiles<cr>
+map <silent> <leader>zb :Buffers<cr>
+map <silent> <leader>zw :Windows<cr>
+map <silent> <leader>zl :Lines<cr>
+map <silent> <leader>zm :Maps<cr>
+map <silent> <leader>zc :Commits<cr>
+map <silent> <leader>zd :Changes<cr>
+map <silent> <leader>zh :History<cr>
+map <silent> <leader>z: :History:<cr>
+map <silent> <leader>z/ :History/<cr>
+
+let g:fzf_preview_window = ['right,50%']
+let g:fzf_colors = {
+\ 'fg':      ['fg', 'Normal'],
+\ 'bg':      ['bg', 'Normal'],
+\ 'hl':      ['fg', 'Comment'],
+\ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+\ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+\ 'hl+':     ['fg', 'Statement'],
+\ 'info':    ['fg', 'PreProc'],
+\ 'border':  ['fg', 'Ignore'],
+\ 'prompt':  ['fg', 'Conditional'],
+\ 'pointer': ['fg', 'Exception'],
+\ 'marker':  ['fg', 'Keyword'],
+\ 'spinner': ['fg', 'Label'],
+\ 'header':  ['fg', 'Comment'],
+\}
+
+
+""""""""""""""""""""""""""""""
+" => bufExplorer
 """"""""""""""""""""""""""""""
 let g:bufExplorerDefaultHelp=0
 let g:bufExplorerShowRelativePath=1
@@ -246,7 +280,7 @@ let g:airline#extensions#tagbar#enabled=1
 let g:goyo_width=100
 let g:goyo_margin_top = 2
 let g:goyo_margin_bottom = 2
-nnoremap <silent> <leader>z :Goyo<cr>
+nnoremap <silent> <leader>y :Goyo<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

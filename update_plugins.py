@@ -12,6 +12,7 @@ auto-pairs https://github.com/jiangmiao/auto-pairs
 ale https://github.com/dense-analysis/ale
 vim-yankstack https://github.com/maxbrunsfeld/vim-yankstack
 ack.vim https://github.com/mileszs/ack.vim
+fzf.vim https://github.com/junegunn/fzf.vim
 bufexplorer https://github.com/jlanzarotta/bufexplorer
 ctrlp.vim https://github.com/ctrlpvim/ctrlp.vim
 nerdtree https://github.com/preservim/nerdtree
