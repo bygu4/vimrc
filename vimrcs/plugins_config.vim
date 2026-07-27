@@ -380,8 +380,19 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*']
 " => Fugitive
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Copy the link to the line of a Git repository to the clipboard
-nnoremap <leader>v :.GBrowse!<CR>
-xnoremap <leader>v :GBrowse!<CR>
+nnoremap <silent> <leader>v :.GBrowse!<CR>
+xnoremap <silent> <leader>v :GBrowse!<CR>
+
+nnoremap <silent> <leader>gg :Git status<CR>
+nnoremap <silent> <leader>gb :Git blame<CR>
+
+" Fugitive extensions
+nnoremap <silent> <leader>gl :GV<CR>
+nnoremap <silent> <leader>gr :Twiggy<CR>
+
+let g:twiggy_group_locals_by_slash = 0
+let g:twiggy_local_branch_sort = 'mru'
+let g:twiggy_remote_branch_sort = 'date'
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
