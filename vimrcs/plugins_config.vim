@@ -313,7 +313,6 @@ let g:ale_fixers = {
 \   'html': ['prettier'],
 \}
 
-let g:ale_use_neovim_lsp_api=0
 let g:ale_c_clangformat_use_local_file=1
 
 " Use highlights instead of signs
@@ -351,6 +350,9 @@ nmap <leader>fs :ALESymbolSearch<space>
 " Refactoring
 nmap <silent> <leader>rn :ALERename<cr>
 nmap <silent> <leader>rf :ALEFileRename<cr>
+
+" Running fixers
+nmap <silent> <leader>gq :ALEFix<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
