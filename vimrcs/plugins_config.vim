@@ -37,7 +37,7 @@ map <silent> <leader>zh :History<cr>
 map <silent> <leader>z: :History:<cr>
 map <silent> <leader>z/ :History/<cr>
 
-let g:fzf_preview_window = ['right,50%']
+let g:fzf_preview_window = ['right,50%', 'ctrl-/']
 let g:fzf_colors = {
 \ 'fg':      ['fg', 'Normal'],
 \ 'bg':      ['bg', 'Normal'],
@@ -342,10 +342,11 @@ nmap <silent> <leader>dt <Plug>(ale_go_to_type_definition)
 nmap <silent> <leader>im <Plug>(ale_go_to_implementation)
 
 " Reference search
-nmap <silent> <leader>fr <Plug>(ale_find_references)
+nmap <silent> <leader>fr :ALEFindReferences -fzf -relative<cr>
+nmap <silent> <leader>rs :ALERepeatSelection<cr>
 
 " Symbol search
-nmap <leader>fs :ALESymbolSearch<space>
+nmap <leader>fs :ALESymbolSearch -relative<space>
 
 " Refactoring
 nmap <silent> <leader>rn :ALERename<cr>
