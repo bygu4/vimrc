@@ -54,12 +54,23 @@ let g:fzf_colors = {
 \ 'header':  ['fg', 'Comment'],
 \}
 
-let g:fzf_action = {
-\ 'ctrl-t': 'tab split',
-\ 'ctrl-s': 'split',
-\ 'ctrl-v': 'vsplit',
-\ 'enter': 'drop'
-\}
+if has('nvim')
+    " edit causes LSP issues with :ALEFindReferences -fzf, use drop
+    let g:fzf_action = {
+    \ 'ctrl-t': 'tab split',
+    \ 'ctrl-s': 'split',
+    \ 'ctrl-v': 'vsplit',
+    \ 'enter': 'drop'
+    \}
+else
+    " drop doesn't work, but edit doesn't cause issues here
+    let g:fzf_action = {
+    \ 'ctrl-t': 'tab split',
+    \ 'ctrl-s': 'split',
+    \ 'ctrl-v': 'vsplit',
+    \ 'enter': 'edit'
+    \}
+endif
 
 
 """"""""""""""""""""""""""""""
