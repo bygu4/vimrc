@@ -54,6 +54,13 @@ let g:fzf_colors = {
 \ 'header':  ['fg', 'Comment'],
 \}
 
+let g:fzf_action = {
+\ 'ctrl-t': 'tab split',
+\ 'ctrl-s': 'split',
+\ 'ctrl-v': 'vsplit',
+\ 'enter': 'drop'
+\}
+
 
 """"""""""""""""""""""""""""""
 " => bufExplorer
@@ -267,11 +274,9 @@ let g:airline#extensions#tabline#show_tab_nr=0
 let g:airline#extensions#tabline#show_splits=0
 let g:airline#extensions#tabline#fnamemod=':t'
 
-" Enable ALE support
 let g:airline#extensions#ale#enabled=1
-
-" Enable Tagbar support
 let g:airline#extensions#tagbar#enabled=1
+let g:airline#extensions#nvimlsp#enabled=0
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
