@@ -375,8 +375,8 @@ nmap <silent> <leader>at :ALEToggle<cr>
 nmap <silent> <leader>ai :ALEInfo<cr>
 nmap <silent> <leader>al :ALELint<cr>
 nmap <silent> <leader>af :ALEFix<cr>
-nmap <silent> <leader>aq :ALEPopulateQuickfix<cr>
-nmap <silent> <leader>aw :ALEPopulateLocList<cr>
+nmap <silent> <leader>aq :ALEPopulateQuickfix<cr>:copen<cr>
+nmap <silent> <leader>aw :ALEPopulateLocList<cr>:lopen<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -385,10 +385,16 @@ nmap <silent> <leader>aw :ALEPopulateLocList<cr>
 let g:gitgutter_enabled=1
 let g:gitgutter_preview_win_floating=1
 
-nnoremap <silent> <leader>gt :GitGutterToggle<cr>
-nnoremap <silent> <leader>gp <Plug>(GitGutterPreviewHunk)
-nnoremap <silent> <leader>gs <Plug>(GitGutterStageHunk)
-nnoremap <silent> <leader>gu <Plug>(GitGutterUndoHunk)
+nnoremap <silent> [g <Plug>(GitGutterPrevHunk)
+nnoremap <silent> ]g <Plug>(GitGutterNextHunk)
+nnoremap <silent> Q <Plug>(GitGutterPreviewHunk)
+nnoremap <silent> gs <Plug>(GitGutterStageHunk)
+nnoremap <silent> gu <Plug>(GitGutterUndoHunk)
+
+omap ih <Plug>(GitGutterTextObjectInnerPending)
+omap ah <Plug>(GitGutterTextObjectOuterPending)
+xmap ih <Plug>(GitGutterTextObjectInnerVisual)
+xmap ah <Plug>(GitGutterTextObjectOuterVisual)
 
 function! GitGutterDiffOrigToggle()
   if &diff
@@ -398,6 +404,8 @@ function! GitGutterDiffOrigToggle()
   endif
 endfunction
 
+nnoremap <silent> <leader>gt :GitGutterToggle<cr>
+nnoremap <silent> <leader>gq :GitGutterQuickFix<cr>:copen<cr>
 nnoremap <silent> <leader>gd :call GitGutterDiffOrigToggle()<cr>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -413,7 +421,7 @@ let g:EditorConfig_exclude_patterns = ['fugitive://.*']
 nnoremap <silent> <leader>v :.GBrowse!<CR>
 xnoremap <silent> <leader>v :GBrowse!<CR>
 
-nnoremap <silent> <leader>gg :Git status<CR>
+nnoremap <silent> <leader>gs :Git status<CR>
 nnoremap <silent> <leader>gb :Git blame<CR>
 
 " Fugitive extensions
