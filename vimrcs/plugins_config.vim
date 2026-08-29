@@ -33,6 +33,7 @@ map <silent> <leader>zl :Lines<cr>
 map <silent> <leader>zm :Maps<cr>
 map <silent> <leader>zc :Commits<cr>
 map <silent> <leader>zd :Changes<cr>
+map <silent> <leader>zt :Colors<cr>
 map <silent> <leader>zh :History<cr>
 map <silent> <leader>z: :History:<cr>
 map <silent> <leader>z/ :History/<cr>
