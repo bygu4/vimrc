@@ -24,19 +24,19 @@ call pathogen#helptags()
 """"""""""""""""""""""""""""""
 " => fzf.vim
 """"""""""""""""""""""""""""""
-map <silent> <leader>zz :Rg<cr>
-map <silent> <leader>zf :Files<cr>
-map <silent> <leader>zg :GFiles<cr>
-map <silent> <leader>zb :Buffers<cr>
-map <silent> <leader>zw :Windows<cr>
-map <silent> <leader>zl :Lines<cr>
-map <silent> <leader>zm :Maps<cr>
-map <silent> <leader>zc :Commits<cr>
-map <silent> <leader>zd :Changes<cr>
-map <silent> <leader>zt :Colors<cr>
-map <silent> <leader>zh :History<cr>
-map <silent> <leader>z: :History:<cr>
-map <silent> <leader>z/ :History/<cr>
+nmap <silent> <leader>zz :Rg<cr>
+nmap <silent> <leader>zf :Files<cr>
+nmap <silent> <leader>zg :GFiles<cr>
+nmap <silent> <leader>zb :Buffers<cr>
+nmap <silent> <leader>zw :Windows<cr>
+nmap <silent> <leader>zl :Lines<cr>
+nmap <silent> <leader>zm :Maps<cr>
+nmap <silent> <leader>zc :Commits<cr>
+nmap <silent> <leader>zd :Changes<cr>
+nmap <silent> <leader>zt :Colors<cr>
+nmap <silent> <leader>zh :History<cr>
+nmap <silent> <leader>z: :History:<cr>
+nmap <silent> <leader>z/ :History/<cr>
 
 let g:fzf_preview_window = ['right,50%', 'ctrl-/']
 let g:fzf_colors = {
@@ -81,7 +81,7 @@ let g:bufExplorerDefaultHelp=0
 let g:bufExplorerShowRelativePath=1
 let g:bufExplorerFindActive=1
 let g:bufExplorerSortBy='name'
-map <silent> <leader>o :BufExplorer<cr>
+nmap <silent> <leader>o :BufExplorer<cr>
 
 
 """"""""""""""""""""""""""""""
@@ -89,8 +89,8 @@ map <silent> <leader>o :BufExplorer<cr>
 """"""""""""""""""""""""""""""
 let g:yankstack_yank_keys = ['y', 'd']
 
-nmap <C-S-left> <Plug>yankstack_substitute_newer_paste
-nmap <C-S-right> <Plug>yankstack_substitute_older_paste
+nmap <C-S-left> <Plug>yankstack_substitute_older_paste
+nmap <C-S-right> <Plug>yankstack_substitute_newer_paste
 
 
 """"""""""""""""""""""""""""""
@@ -99,13 +99,13 @@ nmap <C-S-right> <Plug>yankstack_substitute_older_paste
 let g:ctrlp_working_path_mode = 0
 
 " Quickly find and open a file in the current working directory
-map <silent> <leader>ff :CtrlP<cr>
+nmap <silent> <leader>ff :CtrlP<cr>
 
 " Quickly find and open a buffer
-map <silent> <leader>fb :CtrlPBuffer<cr>
+nmap <silent> <leader>fb :CtrlPBuffer<cr>
 
 " Search for most recently used files
-map <silent> <leader>fu :CtrlPMRU<cr>
+nmap <silent> <leader>fu :CtrlPMRU<cr>
 
 let g:ctrlp_max_height = 20
 let g:ctrlp_custom_ignore = 'node_modules\|^\.DS_Store\|^\.git\|^\.coffee'
@@ -184,12 +184,12 @@ let g:NERDTreeIgnore = [
 \   '^node_modules$',
 \]
 
-map <silent> <C-_> :NERDTreeToggle \| NERDTreeRefresh<cr>
-map <silent> <leader>ng :NERDTreeVCS<cr>
-map <silent> <leader>nc :NERDTreeCWD<cr>
-map <silent> <leader>nr :NERDTreeRefresh<cr>
-map <silent> <leader>nf :NERDTreeFind<cr>
-map <leader>nb :NERDTreeFromBookmark<space>
+nmap <silent> <C-_> :NERDTreeToggle \| NERDTreeRefresh<cr>
+nmap <silent> <leader>ng :NERDTreeVCS<cr>
+nmap <silent> <leader>nc :NERDTreeCWD<cr>
+nmap <silent> <leader>nr :NERDTreeRefresh<cr>
+nmap <silent> <leader>nf :NERDTreeFind<cr>
+nmap <leader>nb :NERDTreeFromBookmark<space>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -203,7 +203,7 @@ let g:tagbar_show_tag_count = 1
 let g:tagbar_autoshowtag = 1
 let g:tagbar_wrap = 2
 
-map <silent> <C-\> :TagbarToggle<cr>
+nmap <silent> <C-\> :TagbarToggle<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -347,30 +347,34 @@ let g:ale_hover_cursor=1
 let g:ale_hover_to_floating_preview=1
 
 " Showing hover information
-nmap <silent> <leader>w <Plug>(ale_hover)
+nmap <silent> W <Plug>(ale_hover)
 
 " Navigation between errors
-nmap <silent> <leader><left> <Plug>(ale_previous_wrap)
-nmap <silent> <leader><right> <Plug>(ale_next_wrap)
+nmap <silent> [e <Plug>(ale_previous_wrap)
+nmap <silent> ]e <Plug>(ale_next_wrap)
 
 " Navigation between definitions
-nmap <silent> <leader>df <Plug>(ale_go_to_definition)
-nmap <silent> <leader>dt <Plug>(ale_go_to_type_definition)
-nmap <silent> <leader>im <Plug>(ale_go_to_implementation)
+nmap <silent> df <Plug>(ale_go_to_definition)
+nmap <silent> tp <Plug>(ale_go_to_type_definition)
+nmap <silent> im <Plug>(ale_go_to_implementation)
+
+" Refactoring
+nmap <silent> rn :ALERename<cr>
+nmap <silent> rf :ALEFileRename<cr>
+nmap <silent> ca :ALECodeAction<cr>
+xmap <silent> ca :ALECodeAction<cr>
 
 " Reference search
-nmap <silent> <leader>fr :ALEFindReferences -fzf -relative<cr>
-nmap <silent> <leader>rs :ALERepeatSelection<cr>
+nmap <silent> fr :ALEFindReferences -fzf -relative<cr>
+nmap <silent> rs :ALERepeatSelection<cr>
 
 " Symbol search
 nmap <leader>fs :ALESymbolSearch -relative<space>
 
-" Refactoring
-nmap <silent> <leader>rn :ALERename<cr>
-nmap <silent> <leader>rf :ALEFileRename<cr>
-
-" Running fixers
-nmap <silent> <leader>gq :ALEFix<cr>
+nmap <silent> <leader>at :ALEToggle<cr>
+nmap <silent> <leader>ai :ALEInfo<cr>
+nmap <silent> <leader>al :ALELint<cr>
+nmap <silent> <leader>af :ALEFix<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -379,10 +383,10 @@ nmap <silent> <leader>gq :ALEFix<cr>
 let g:gitgutter_enabled=1
 let g:gitgutter_preview_win_floating=1
 
-noremap <silent> <leader>gt :GitGutterToggle<cr>
-noremap <silent> <leader>gp <Plug>(GitGutterPreviewHunk)
-noremap <silent> <leader>gs <Plug>(GitGutterStageHunk)
-noremap <silent> <leader>gu <Plug>(GitGutterUndoHunk)
+nnoremap <silent> <leader>gt :GitGutterToggle<cr>
+nnoremap <silent> <leader>gp <Plug>(GitGutterPreviewHunk)
+nnoremap <silent> <leader>gs <Plug>(GitGutterStageHunk)
+nnoremap <silent> <leader>gu <Plug>(GitGutterUndoHunk)
 
 function! GitGutterDiffOrigToggle()
   if &diff
