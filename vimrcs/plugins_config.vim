@@ -375,6 +375,8 @@ nmap <silent> <leader>at :ALEToggle<cr>
 nmap <silent> <leader>ai :ALEInfo<cr>
 nmap <silent> <leader>al :ALELint<cr>
 nmap <silent> <leader>af :ALEFix<cr>
+nmap <silent> <leader>aq :ALEPopulateQuickfix<cr>
+nmap <silent> <leader>aw :ALEPopulateLocList<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

@@ -146,8 +146,11 @@ vnoremap <silent> <leader>r :call VisualSelection('replace', '')<CR>
 "
 map <leader>cc :botright cope<cr>
 map <leader>co ggVGy:tabnew<cr>:set syntax=qf<cr>pgg
-map <leader><up> :cp<cr>
-map <leader><down> :cn<cr>
+
+map <leader><left> :cprev<cr>
+map <leader><right> :cnext<cr>
+map <leader><up> :cfirst<cr>
+map <leader><down> :clast<cr>
 
 " Make sure that enter is never overriden in the quickfix window
 autocmd BufReadPost quickfix nnoremap <buffer> <CR> <CR>
