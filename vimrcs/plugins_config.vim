@@ -427,8 +427,8 @@ nmap <silent> <leader>aw :ALEPopulateLocList<cr>:lopen<cr>
 let g:gitgutter_enabled=1
 let g:gitgutter_preview_win_floating=1
 
-nnoremap <silent> [g <Plug>(GitGutterPrevHunk)
-nnoremap <silent> ]g <Plug>(GitGutterNextHunk)
+nnoremap <silent> [h <Plug>(GitGutterPrevHunk)
+nnoremap <silent> ]h <Plug>(GitGutterNextHunk)
 nnoremap <silent> Q <Plug>(GitGutterPreviewHunk)
 nnoremap <silent> gs <Plug>(GitGutterStageHunk)
 nnoremap <silent> gu <Plug>(GitGutterUndoHunk)
