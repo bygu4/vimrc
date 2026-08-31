@@ -81,16 +81,17 @@ let g:bufExplorerDefaultHelp=0
 let g:bufExplorerShowRelativePath=1
 let g:bufExplorerFindActive=1
 let g:bufExplorerSortBy='name'
-nmap <silent> <leader>o :BufExplorer<cr>
 
 
 """"""""""""""""""""""""""""""
 " => YankStack
 """"""""""""""""""""""""""""""
 let g:yankstack_yank_keys = ['y', 'd']
+let g:yankstack_map_keys = 0
 
-nmap <C-S-left> <Plug>yankstack_substitute_older_paste
-nmap <C-S-right> <Plug>yankstack_substitute_newer_paste
+nmap <leader>y :Yanks<cr>
+nmap <M-y> <Plug>yankstack_substitute_older_paste
+nmap <M-S-y> <Plug>yankstack_substitute_newer_paste
 
 
 """"""""""""""""""""""""""""""
@@ -297,7 +298,7 @@ let g:airline#extensions#nvimlsp#enabled=0
 let g:goyo_width=100
 let g:goyo_margin_top = 2
 let g:goyo_margin_bottom = 2
-nnoremap <silent> <leader>y :Goyo<cr>
+nnoremap <silent> <leader>o :Goyo<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -378,8 +379,8 @@ let g:ale_c_clangformat_use_local_file=1
 let g:ale_set_signs=0
 let g:ale_set_highlights=1
 
-" Run fixes on save
-let g:ale_fix_on_save=1
+" Run fixes manually
+let g:ale_fix_on_save=0
 
 " Enable completion
 let g:ale_completion_enabled=1
