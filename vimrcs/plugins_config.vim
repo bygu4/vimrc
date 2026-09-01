@@ -529,5 +529,6 @@ let s:ascii_footer = [
 let g:startify_padding_left = 20
 let g:startify_custom_header = startify#pad(s:ascii_header + startify#fortune#quote())
 let g:startify_custom_footer = startify#pad(s:ascii_footer)
+let g:startify_change_to_vcs_root = 1
 
 nmap <leader>~ :Startify<cr>
