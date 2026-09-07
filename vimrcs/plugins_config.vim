@@ -397,24 +397,23 @@ nmap <silent> [e <Plug>(ale_previous_wrap)
 nmap <silent> ]e <Plug>(ale_next_wrap)
 
 " Navigation between definitions
-nmap <silent> df <Plug>(ale_go_to_definition)
-nmap <silent> tp <Plug>(ale_go_to_type_definition)
-nmap <silent> im <Plug>(ale_go_to_implementation)
+nmap <silent> gd <Plug>(ale_go_to_definition)
+nmap <silent> gt <Plug>(ale_go_to_type_definition)
+nmap <silent> gi <Plug>(ale_go_to_implementation)
+
+" Reference/symbol search
+nmap afs :ALESymbolSearch -relative<space>
+nmap <silent> afr :ALEFindReferences -fzf -relative<cr>
+nmap <silent> ars :ALERepeatSelection<cr>
 
 " Refactoring
-nmap <silent> rn :ALERename<cr>
-nmap <silent> rf :ALEFileRename<cr>
-nmap <silent> ca :ALECodeAction<cr>
-xmap <silent> ca :ALECodeAction<cr>
-
-" Reference search
-nmap <silent> fr :ALEFindReferences -fzf -relative<cr>
-nmap <silent> rs :ALERepeatSelection<cr>
-
-" Symbol search
-nmap <leader>fs :ALESymbolSearch -relative<space>
+nmap <silent> arn :ALERename<cr>
+nmap <silent> arf :ALEFileRename<cr>
+nmap <silent> aca :ALECodeAction<cr>
+xmap <silent> aca :ALECodeAction<cr>
 
 nmap <silent> <leader>at :ALEToggle<cr>
+nmap <silent> <leader>ar :ALEReset<cr>
 nmap <silent> <leader>ai :ALEInfo<cr>
 nmap <silent> <leader>al :ALELint<cr>
 nmap <silent> <leader>af :ALEFix<cr>
