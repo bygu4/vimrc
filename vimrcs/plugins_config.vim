@@ -402,15 +402,15 @@ nmap <silent> gt <Plug>(ale_go_to_type_definition)
 nmap <silent> gi <Plug>(ale_go_to_implementation)
 
 " Reference/symbol search
-nmap afs :ALESymbolSearch -relative<space>
-nmap <silent> afr :ALEFindReferences -fzf -relative<cr>
-nmap <silent> ars :ALERepeatSelection<cr>
+nmap <leader>fs :ALESymbolSearch -relative<space>
+nmap <silent> <leader>fr :ALEFindReferences -fzf -relative<cr>
+nmap <silent> <leader>rs :ALERepeatSelection<cr>
 
 " Refactoring
-nmap <silent> arn :ALERename<cr>
-nmap <silent> arf :ALEFileRename<cr>
-nmap <silent> aca :ALECodeAction<cr>
-xmap <silent> aca :ALECodeAction<cr>
+nmap <silent> <leader>rn :ALERename<cr>
+nmap <silent> <leader>rf :ALEFileRename<cr>
+nmap <silent> <leader>ca :ALECodeAction<cr>
+xmap <silent> <leader>ca :ALECodeAction<cr>
 
 nmap <silent> <leader>at :ALEToggle<cr>
 nmap <silent> <leader>ar :ALEReset<cr>
