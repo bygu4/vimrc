@@ -406,7 +406,7 @@ map <leader>m :e ~/buffer.md<cr>
 " Toggle paste mode on and off
 map <leader>p :setlocal paste!<cr>
 
-set·completeopt=menu,menuone,popup,noselect,noinsert
+set completeopt=menu,menuone,popup,noselect,noinsert
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
