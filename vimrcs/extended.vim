@@ -136,7 +136,7 @@ vnoremap <silent> <leader>r :call VisualSelection('replace', '')<CR>
 " Do :help cope if you are unsure what cope is. It's super useful!
 "
 " When you search with Ack, display your results in cope by doing:
-"   <leader>cc
+"   <leader>q
 "
 " To go to the previous search results do:
 "   <leader><up>
@@ -144,8 +144,7 @@ vnoremap <silent> <leader>r :call VisualSelection('replace', '')<CR>
 " To go to the next search result do:
 "   <leader><down>
 "
-map <leader>cc :botright cope<cr>
-map <leader>co ggVGy:tabnew<cr>:set syntax=qf<cr>pgg
+map <leader>q :botright cope<cr>
 
 map <leader><left> :cprev<cr>
 map <leader><right> :cnext<cr>

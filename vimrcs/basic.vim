@@ -398,7 +398,7 @@ endif
 " => Misc
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Quickly open a buffer for scribble
-map <leader>q :e ~/buffer<cr>
+map <leader>w :e ~/buffer<cr>
 
 " Quickly open a markdown buffer for scribble
 map <leader>m :e ~/buffer.md<cr>
