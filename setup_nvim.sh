@@ -2,13 +2,10 @@
 set -e
 
 mkdir -p ~/.config/nvim
-mkdir -p ~/.local/share/nvim/undo/
+mkdir -p ~/.vim_runtime/temp_dirs/undodir_nvim
 
 echo 'set runtimepath^=~/.vim runtimepath+=~/.vim/after
 let &packpath = &runtimepath
-source ~/.vimrc
-
-set undofile
-set undodir=~/.local/share/nvim/undo/' > ~/.config/nvim/init.vim
+source ~/.vimrc' > ~/.config/nvim/init.vim
 
 echo "Done!"

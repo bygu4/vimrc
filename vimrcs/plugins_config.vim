@@ -491,7 +491,11 @@ endif
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Startify
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-let s:vim_version = matchstr(execute('version'), 'Vi IMproved \zs\d[^ ]*')
+if has('nvim')
+    let s:vim_version = matchstr(execute('version'), 'NVIM \zsv[0-9.]*')
+else
+    let s:vim_version = matchstr(execute('version'), 'Vi IMproved \zs\d[^ ]*')
+endif
 
 let s:ascii_header = [
             \ "                            ___________ _",

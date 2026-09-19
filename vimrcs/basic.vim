@@ -380,10 +380,12 @@ endif
 
 set background=dark
 
-try
-    colorscheme desert
-catch
-endtry
+if !exists('g:colors_name')
+    try
+        colorscheme desert
+    catch
+    endtry
+endif
 
 " Set extra options when running in GUI mode
 if has("gui_running")
@@ -405,6 +407,9 @@ map <leader>m :e ~/buffer.md<cr>
 
 " Toggle paste mode on and off
 map <leader>p :setlocal paste!<cr>
+
+" Reload the config
+nnoremap <leader>rc :source $MYVIMRC<cr>
 
 set completeopt=menu,menuone,popup,noselect,noinsert
 
