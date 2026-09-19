@@ -534,4 +534,172 @@ let g:startify_custom_header = startify#pad(s:ascii_header + startify#fortune#qu
 let g:startify_custom_footer = startify#pad(s:ascii_footer)
 let g:startify_change_to_vcs_root = 1
 
-nmap <leader>~ :Startify<cr>
+nmap <silent> <leader>~ :Startify<cr>
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => CodeCompanion
+" Chat/inline use OpenRouter's free tier - export OPENROUTER_API_KEY
+" in your shell (get one at https://openrouter.ai/settings/keys).
+" Press `ga` in a chat buffer to switch between the free models below.
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+if has('nvim')
+lua << EOF
+-- Keep a fixed adapter's model choices down to just its own default, so `ga`
+-- skips the picker for it even though show_model_choices=true globally (for
+-- the plain "openrouter" adapter). Filtering the real catalog (rather than a
+-- hand-rolled single entry) keeps each model's real metadata, which other
+-- schema fields (temperature, top_p, reasoning.effort, ...) rely on to know
+-- what that specific model supports.
+local function single_choice(model_id)
+  local base_choices = require("codecompanion.adapters.http.openrouter").schema.model.choices
+  return function(self, opts)
+    local all = base_choices(self, opts)
+    return { [model_id] = all[model_id] }
+  end
+end
+
+require("codecompanion").setup({
+  display = {
+    chat = {
+      window = { position = "right" },
+      fold_context = true, -- Start shared file/buffer context folded
+    },
+  },
+  interactions = {
+    chat = {
+      adapter = "openrouter",
+      -- Autosave every chat as a session so it can be resumed later, e.g.
+      -- via :CodeCompanionChat and the action palette's "Load chats" entry.
+      sessions = { autosave = true },
+    },
+    inline = { adapter = "openrouter" },
+    background = { adapter = "openrouter" },
+    cmd = { adapter = "openrouter" },
+    cli = {
+      agent = "claude_code",
+      agents = {
+        claude_code = {
+          cmd = "claude",
+          args = {},
+          description = "Claude Code CLI",
+          provider = "terminal",
+        },
+        codex = {
+          cmd = "codex",
+          args = {},
+          description = "OpenAI Codex CLI",
+          provider = "terminal",
+        },
+      },
+    },
+  },
+  adapters = {
+    http = {
+      -- Free OpenRouter models. Press `ga` in a chat buffer to switch
+      -- between them (or between this and any other configured adapter).
+      -- "openrouter" itself keeps the full model picker (show_model_choices
+      -- below); the rest are fixed to one free model each and skip it.
+      openrouter = function()
+        return require("codecompanion.adapters").extend("openrouter", {
+          schema = { model = { default = "qwen/qwen3.8-27b:free" } },
+        })
+      end,
+      openrouter_deepseek = function()
+        local model_id = "deepseek/deepseek-v4-flash-0731:free"
+        return require("codecompanion.adapters").extend("openrouter", {
+          formatted_name = "OpenRouter (DeepSeek V4 Flash, free)",
+          schema = { model = { default = model_id, choices = single_choice(model_id) } },
+        })
+      end,
+      openrouter_glm = function()
+        local model_id = "z-ai/glm-5.2:free"
+        return require("codecompanion.adapters").extend("openrouter", {
+          formatted_name = "OpenRouter (GLM 5.2, free)",
+          schema = { model = { default = model_id, choices = single_choice(model_id) } },
+        })
+      end,
+      openrouter_gemma = function()
+        local model_id = "google/gemma-4-31b-it:free"
+        return require("codecompanion.adapters").extend("openrouter", {
+          formatted_name = "OpenRouter (Gemma 4 31B, free)",
+          schema = { model = { default = model_id, choices = single_choice(model_id) } },
+        })
+      end,
+      openrouter_nemotron = function()
+        local model_id = "nvidia/nemotron-3-super-120b-a12b:free"
+        return require("codecompanion.adapters").extend("openrouter", {
+          formatted_name = "OpenRouter (Nemotron 3 Super, free)",
+          schema = { model = { default = model_id, choices = single_choice(model_id) } },
+        })
+      end,
+      openrouter_nemotron_ultra = function()
+        local model_id = "nvidia/nemotron-3-ultra-550b-a55b:free"
+        return require("codecompanion.adapters").extend("openrouter", {
+          formatted_name = "OpenRouter (Nemotron 3 Ultra, free)",
+          schema = { model = { default = model_id, choices = single_choice(model_id) } },
+        })
+      end,
+      openrouter_dots = function()
+        local model_id = "dots-studio/dots-3-note-preview:free"
+        return require("codecompanion.adapters").extend("openrouter", {
+          formatted_name = "OpenRouter (Dots 3 Note, free)",
+          schema = { model = { default = model_id, choices = single_choice(model_id) } },
+        })
+      end,
+      openrouter_liquid = function()
+        local model_id = "liquid/lfm-2.5-2.6b:free"
+        return require("codecompanion.adapters").extend("openrouter", {
+          formatted_name = "OpenRouter (LFM 2.5 2.6B, free)",
+          schema = { model = { default = model_id, choices = single_choice(model_id) } },
+        })
+      end,
+      openrouter_nex = function()
+        local model_id = "nex-agi/nex-n2.5-mini:free"
+        return require("codecompanion.adapters").extend("openrouter", {
+          formatted_name = "OpenRouter (Nex N2.5 Mini, free)",
+          schema = { model = { default = model_id, choices = single_choice(model_id) } },
+        })
+      end,
+      openrouter_ling = function()
+        local model_id = "inclusionai/ling-3.0-flash-vl:free"
+        return require("codecompanion.adapters").extend("openrouter", {
+          formatted_name = "OpenRouter (Ling 3.0 Flash VL, free)",
+          schema = { model = { default = model_id, choices = single_choice(model_id) } },
+        })
+      end,
+      opts = { show_presets = false, show_model_choices = true },
+    },
+    acp = {
+      opts = { show_presets = false },
+    },
+  },
+})
+EOF
+
+nmap <silent> <leader>cc :CodeCompanion<cr>
+xmap <silent> <leader>cc :CodeCompanion<cr>
+nmap <silent> <leader>cn :CodeCompanionChat<cr>
+xmap <silent> <leader>cn :CodeCompanionChat<cr>
+nmap <silent> <leader>ct :CodeCompanionChat Toggle<cr>
+xmap <silent> <leader>ct :CodeCompanionChat Add<cr>
+nmap <silent> <leader>cl :lua require("codecompanion").toggle_cli()<cr>
+xmap <silent> <leader>cl :CodeCompanionCLI<cr>
+nmap <silent> <leader>cx :CodeCompanionActions<cr>
+xmap <silent> <leader>cx :CodeCompanionActions<cr>
+nmap <silent> <leader>cr :CodeCompanionCodeReview<cr>
+xmap <silent> <leader>cr :CodeCompanionCodeReview<cr>
+
+" Tools/agents: type @agent (full tool access) or @files (read/create/edit/
+" search only) in the chat input to grant that turn tool access - they are
+" not loaded by default, so plain Q&A chats stay lightweight. Every tool
+" that can touch disk or run a command asks for approval before it acts.
+"
+" In a buffer with a pending LLM edit or diff:
+"   gv   view the proposed diff        g1  always accept in this buffer
+"   g2   accept the change             g3  reject the change
+"   {  } previous/next hunk            g4  cancel all pending tool calls
+" In the chat buffer:
+"   gty  toggle YOLO (auto-approve) mode for that chat
+"   gtx  reset cached tool approvals
+endif

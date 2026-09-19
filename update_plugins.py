@@ -62,6 +62,8 @@ sonokai https://github.com/sainnhe/sonokai
 tagbar https://github.com/preservim/tagbar
 vim-tmux-navigator https://github.com/christoomey/vim-tmux-navigator
 vim-startify https://github.com/mhinz/vim-startify
+plenary.nvim https://github.com/nvim-lua/plenary.nvim
+codecompanion.nvim https://github.com/olimorris/codecompanion.nvim
 """.strip()
 
 GITHUB_ZIP = "%s/archive/master.zip"
