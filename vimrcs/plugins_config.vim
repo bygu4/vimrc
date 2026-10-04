@@ -385,6 +385,9 @@ let g:ale_fix_on_save=0
 " Enable completion
 let g:ale_completion_enabled=1
 
+" Save refactoring changes on hidden buffers
+let g:ale_save_hidden=1
+
 " Hover settings
 let g:ale_hover_cursor=1
 let g:ale_hover_to_floating_preview=1

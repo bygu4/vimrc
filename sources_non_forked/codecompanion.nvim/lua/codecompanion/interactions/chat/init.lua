@@ -64,20 +64,21 @@
 ---@field tools? table<string> List of tools to preload in the chat buffer
 ---@field intro_message? string The welcome message that is displayed in the chat buffer
 ---@field window_opts? table Window configuration options for the chat buffer
----@field yolo_mode? boolean Automatically approve all tool calls
+---@field approval_mode? CodeCompanion.Tools.ApprovalMode How tool calls are approved
+---@field yolo_mode? boolean Deprecated. Use `approval_mode = "auto"`
 
 local adapter_utils = require("codecompanion.adapters.utils")
 local adapters = require("codecompanion.adapters")
 local approvals = require("codecompanion.interactions.chat.tools.approvals")
 local config = require("codecompanion.config")
 local context_helpers = require("codecompanion.interactions.chat.helpers.context")
+local context_paths = require("codecompanion.interactions.chat.helpers.context_paths")
 local helpers = require("codecompanion.interactions.chat.helpers")
 local parser = require("codecompanion.interactions.chat.parser")
 local schema = require("codecompanion.schema")
 local tags = require("codecompanion.interactions.shared.tags")
 
 local hash = require("codecompanion.utils.hash")
-local images_utils = require("codecompanion.utils.images")
 local keymaps = require("codecompanion.utils.keymaps")
 local log = require("codecompanion.utils.log")
 local tokens = require("codecompanion.utils.tokens")
@@ -184,6 +185,16 @@ local function backfill_estimated_tokens(messages)
       msg._meta.estimated_tokens = tokens.calculate(msg.content)
     end
   end
+end
+
+---Turn a failed request's reason into the text passed to `on_completed`
+---@param reason string|table
+---@return string
+local function describe_error(reason)
+  if type(reason) == "table" then
+    return reason.body or vim.inspect(reason)
+  end
+  return reason
 end
 
 ---Get the appropriate client for the adapter type
@@ -610,9 +621,11 @@ function Chat.new(args)
   self.bufnr = create_chat_buf()
   self.aug = api.nvim_create_augroup(CONSTANTS.AUTOCMD_GROUP .. ":" .. self.bufnr, { clear = false })
 
-  if args.yolo_mode then
-    approvals:toggle_yolo_mode(self.bufnr)
-    utils.notify("YOLO mode enabled!", vim.log.levels.INFO)
+  local approval_mode = args.approval_mode or (args.yolo_mode and "auto")
+  if approval_mode and approval_mode ~= approvals:get_mode(self.bufnr) then
+    approvals:set_mode(self.bufnr, { mode = approval_mode })
+    local labels = { ask = "Ask", auto = "Auto", yolo = "YOLO" }
+    utils.notify(("Approval mode: %s"):format(labels[approval_mode]), vim.log.levels.INFO)
   end
 
   if not init_parsers(self) then
@@ -1089,8 +1102,9 @@ function Chat:_orphaned_tool_calls()
   for _, msg in ipairs(self.messages) do
     if msg.tools and msg.tools.calls then
       for _, call in ipairs(msg.tools.calls) do
-        if call.id then
-          pending[call.id] = call
+        local pairing_id = adapter_utils.pairing_id(call)
+        if pairing_id then
+          pending[pairing_id] = call
         end
       end
     end
@@ -1280,7 +1294,7 @@ function Chat:_submit_http(payload)
         end
       elseif self.status == CONSTANTS.STATUS_ERROR then
         log:error("[chat::_submit_http] Error: %s", result.output)
-        self:done(output)
+        self:done(output, nil, nil, nil, { error = describe_error(result.output) })
       end
     end
   end
@@ -1300,8 +1314,9 @@ function Chat:_submit_http(payload)
         return
       end
       self.status = CONSTANTS.STATUS_ERROR
-      log:error("[chat::_submit_http] Error: %s", (err and (err.stderr or err.message)) or "unknown")
-      self:done(output)
+      local reason = (err and (err.stderr or err.message)) or "unknown"
+      log:error("[chat::_submit_http] Error: %s", reason)
+      self:done(output, nil, nil, nil, { error = describe_error(reason) })
     end,
     bufnr = self.bufnr,
     interaction = "chat",
@@ -1420,7 +1435,7 @@ function Chat:submit(opts)
     end
 
     if message_to_submit then
-      self:check_images(message_to_submit)
+      context_paths.attach({ chat = self, message = message_to_submit })
     end
 
     -- Add the user message after any context so the LLM sees context first
@@ -1501,7 +1516,7 @@ end
 ---@param reasoning? table The reasoning output from the LLM
 ---@param tools? table The tools output from the LLM
 ---@param meta? table Any metadata from the LLM
----@param opts? { status: "stopped" } The reason the done method was called
+---@param opts? { status?: "stopped", error?: string } The reason the done method was called
 ---@return nil
 function Chat:done(output, reasoning, tools, meta, opts)
   opts = opts or {}
@@ -1609,15 +1624,19 @@ function Chat:done(output, reasoning, tools, meta, opts)
   if require("codecompanion.interactions.chat.context_management").apply(self) then
     return
   end
-  self:finish()
+  self:finish({ error = opts.error })
 end
 
 ---End the turn, handing the chat buffer back to the user
+---@param opts? { error?: string }
 ---@return nil
-function Chat:finish()
+function Chat:finish(opts)
+  opts = opts or {}
+  -- Captured first as `ready_for_input` resets the status to an empty string
+  local status = self.status
   self:ready_for_input()
 
-  self:dispatch("on_completed", { status = self.status })
+  self:dispatch("on_completed", { status = status, error = opts.error })
   utils.fire("ChatDone", { bufnr = self.bufnr, id = self.id })
 end
 
@@ -1637,32 +1656,6 @@ function Chat:add_context(data, source, id, opts)
   -- Context is created by adding it to the context class and linking it to a message on the chat buffer
   self.context:add({ source = source, id = id, bufnr = opts.bufnr, path = opts.path, opts = opts.context_opts })
   self:add_message(message, { visible = opts.visible, context = { id = id }, _meta = { tag = opts.tag or source } })
-end
-
----Check if there are any images in the chat buffer
----@param message table
----@return nil
-function Chat:check_images(message)
-  local images = parser.images(self, self.header_line)
-  if not images then
-    return
-  end
-
-  for _, image in ipairs(images) do
-    local encoded_image = images_utils.encode_image(image)
-    if type(encoded_image) == "string" then
-      log:warn("Could not encode image: %s", encoded_image)
-    else
-      self:add_image_message(encoded_image)
-
-      -- Replace the image link in the message with "image"
-      local to_remove = fmt("[Image](%s)", image.path)
-      message.content = vim.trim(message.content:gsub(vim.pesc(to_remove), "image"))
-
-      to_remove = fmt("![%s](%s)", image.text or "", image.path)
-      message.content = vim.trim(message.content:gsub(vim.pesc(to_remove), "image"))
-    end
-  end
 end
 
 ---Reconcile the context_items table to the items in the chat buffer
