@@ -1,4 +1,4 @@
-local Curl = require("plenary.curl")
+local Curl = require("codecompanion.utils.curl")
 
 local adapter_utils = require("codecompanion.adapters.utils")
 local adapters = require("codecompanion.adapters")
@@ -25,6 +25,8 @@ Client.static = {}
 Client.static.methods = {
   post = { default = Curl.post },
   get = { default = Curl.get },
+  post_sync = { default = Curl.post_sync },
+  get_sync = { default = Curl.get_sync },
   encode = { default = vim.json.encode },
   schedule = { default = vim.schedule },
   schedule_wrap = { default = vim.schedule_wrap },
@@ -52,13 +54,12 @@ local function write_headers_file(headers)
   return path
 end
 
----@param paths string[]
----@param status? string
-local function delete_temp_files(paths, status)
-  if status == "error" or not vim.tbl_contains({ "ERROR", "INFO" }, config.opts.log_level) then
+---@param opts { paths: string[], status?: string }
+local function delete_temp_files(opts)
+  if opts.status == "error" or not vim.tbl_contains({ "ERROR", "INFO" }, config.opts.log_level) then
     return
   end
-  for _, path in ipairs(paths) do
+  for _, path in ipairs(opts.paths) do
     files.delete(path)
   end
 end
@@ -80,9 +81,16 @@ local function transform_static_methods(opts)
 end
 
 ---@param self CodeCompanion.HTTPClient
+---@param opts? { stream?: boolean }
 ---@return CodeCompanion.HTTPAdapter|nil adapter, table|nil err
-local function prepare_adapter(self)
+local function prepare_adapter(self, opts)
+  opts = opts or {}
   local adapter = vim.deepcopy(self.adapter)
+
+  -- Must happen before setup, or adapters still put `stream: true` in the request body
+  if opts.stream ~= nil and adapter.opts then
+    adapter.opts.stream = opts.stream
+  end
 
   local ok = adapters.call_handler(adapter, "setup")
   if ok == false then
@@ -99,27 +107,24 @@ end
 function Client.merge_body(adapter, payload)
   return vim.tbl_deep_extend(
     "keep",
-    adapters.call_handler(
-      adapter,
-      "build_parameters",
-      adapter_utils.set_env_vars(adapter, adapter.parameters),
-      payload.messages
-    ) or {},
-    adapters.call_handler(adapter, "build_messages", payload.messages) or {},
-    adapters.call_handler(adapter, "build_tools", payload.tools) or {},
-    adapters.call_handler(adapter, "build_structured_output", payload.structured_output) or {},
+    adapters.call_handler(adapter, "build_parameters", {
+      params = adapter_utils.set_env_vars(adapter, adapter.parameters),
+      messages = payload.messages,
+    }) or {},
+    adapters.call_handler(adapter, "build_messages", { messages = payload.messages }) or {},
+    adapters.call_handler(adapter, "build_tools", { tools = payload.tools }) or {},
+    adapters.call_handler(adapter, "build_structured_output", { schema = payload.structured_output }) or {},
     adapter.body and adapter.body or {},
-    adapters.call_handler(adapter, "build_body", payload) or {}
+    adapters.call_handler(adapter, "build_body", { payload = payload }) or {}
   )
 end
 
 ---Build and encode the request body from the adapter handlers and payload
 ---@param self CodeCompanion.HTTPClient
----@param adapter CodeCompanion.HTTPAdapter
----@param payload CodeCompanion.HTTPPayload
+---@param opts { adapter: CodeCompanion.HTTPAdapter, payload: CodeCompanion.HTTPPayload }
 ---@return string
-local function encode_body(self, adapter, payload)
-  return self.methods.encode(Client.merge_body(adapter, payload))
+local function encode_body(self, opts)
+  return self.methods.encode(Client.merge_body(opts.adapter, opts.payload))
 end
 
 ---Assemble the curl args shared by every request, plus the adapter's headers file
@@ -217,6 +222,8 @@ function Client:send(payload, opts)
   local handle_state = "pending"
   local meta = { id = tostring(math.random(10000000)) }
   local had_error = false
+  -- Read once, as the caller may switch streaming back on before `done` runs
+  local is_streaming = self.adapter and self.adapter.opts and self.adapter.opts.stream
 
   ---@param s "pending"|"streaming"|"success"|"error"|"cancelled"
   local function set_state(s)
@@ -235,8 +242,6 @@ function Client:send(payload, opts)
         end
         return
       end
-
-      local is_streaming = self.adapter and self.adapter.opts and self.adapter.opts.stream
 
       -- Streaming chunks (no final response table is delivered here on success)
       if is_streaming then
@@ -263,7 +268,6 @@ function Client:send(payload, opts)
 
     -- Defer on_done to the next tick to suppress it if an error arrives later on
     done = function()
-      local is_streaming = self.adapter and self.adapter.opts and self.adapter.opts.stream
       if not is_streaming then
         return
       end
@@ -306,14 +310,10 @@ end
 function Client:send_sync(payload, opts)
   opts = opts or {}
 
-  local adapter, prepare_err = prepare_adapter(self)
+  -- Turn streaming off so we don't have to handle malformed JSON chunks
+  local adapter, prepare_err = prepare_adapter(self, { stream = false })
   if not adapter then
     return nil, prepare_err
-  end
-
-  -- Turn streaming off so we don't have to handle malformed JSON chunks
-  if adapter.opts then
-    adapter.opts.stream = false
   end
 
   if payload.structured_output and not adapters.get_handler(adapter, "build_structured_output") then
@@ -322,11 +322,11 @@ function Client:send_sync(payload, opts)
     return nil, { message = msg, stderr = msg }
   end
 
-  local body_file = write_body_file(encode_body(self, adapter, payload))
+  local body_file = write_body_file(encode_body(self, { adapter = adapter, payload = payload }))
   local raw, headers_file = Client.build_curl_args(adapter)
 
   local request_opts = {
-    body = body_file,
+    body_file = body_file,
     insecure = config.adapters.http.opts.allow_insecure,
     proxy = config.adapters.http.opts.proxy,
     raw = raw,
@@ -342,26 +342,20 @@ function Client:send_sync(payload, opts)
     utils.fire("RequestStarted", event_opts)
   end
 
-  local response, err = nil, nil
-  local ok, result = pcall(self.methods[Client.resolve_method(adapter)], request_opts)
-  if not ok then
-    err = { message = tostring(result), stderr = tostring(result) }
-  else
-    response = result
-    if response and response.status and response.status >= 400 then
-      err = { message = string.format([[%d error: ]], response.status), stderr = response, status = response.status }
-      response = nil
-    end
+  local response, err = self.methods[Client.resolve_method(adapter) .. "_sync"](request_opts)
+  if response and response.status >= 400 then
+    err = { message = string.format([[%d error: ]], response.status), stderr = response, status = response.status }
+    response = nil
   end
 
-  adapters.call_handler(adapter, "on_exit", response or (err and err.stderr))
+  adapters.call_handler(adapter, "on_exit", { data = response or (err and err.stderr) })
   adapters.call_handler(adapter, "teardown")
 
   if not opts.silent then
     utils.fire("RequestFinished", event_opts)
   end
 
-  delete_temp_files({ body_file, headers_file }, err and "error" or "success")
+  delete_temp_files({ paths = { body_file, headers_file }, status = err and "error" or "success" })
   return response, err
 end
 
@@ -373,7 +367,7 @@ end
 ---@param payload CodeCompanion.HTTPPayload
 ---@param actions CodeCompanion.HTTPAdapter.RequestActions
 ---@param opts? table Options that can be passed to the request
----@return table|nil The Plenary job
+---@return CodeCompanion.Curl.Job|nil
 function Client:request(payload, actions, opts)
   -- Check if the adapter has a custom request function and use it instead
   if
@@ -394,7 +388,7 @@ function Client:request(payload, actions, opts)
     return log:error("Failed to setup adapter")
   end
 
-  local body_file = write_body_file(encode_body(self, adapter, payload))
+  local body_file = write_body_file(encode_body(self, { adapter = adapter, payload = payload }))
   log:info("Request body file: %s", body_file)
 
   local response = log.new_response_file()
@@ -406,7 +400,7 @@ function Client:request(payload, actions, opts)
   local stream_error_body = nil
 
   local request_opts = {
-    body = body_file,
+    body_file = body_file,
     insecure = config.adapters.http.opts.allow_insecure,
     proxy = config.adapters.http.opts.proxy,
     raw = raw,
@@ -419,7 +413,7 @@ function Client:request(payload, actions, opts)
           cb(nil, data, adapter)
         end
 
-        adapters.call_handler(adapter, "on_exit", data)
+        adapters.call_handler(adapter, "on_exit", { data = data })
         adapters.call_handler(adapter, "teardown")
 
         if actions.done and type(actions.done) == "function" then
@@ -430,7 +424,7 @@ function Client:request(payload, actions, opts)
         if data and data.status and data.status >= 400 then
           opts.status = "error"
           actions.callback({ message = string.format([[%d error: ]], data.status), stderr = data }, nil)
-        elseif not data and stream_error_body then
+        elseif stream_error_body then
           opts.status = "error"
           actions.callback({ message = "Request failed", stderr = stream_error_body }, nil)
         end
@@ -438,7 +432,7 @@ function Client:request(payload, actions, opts)
         if not opts.silent then
           utils.fire("RequestFinished", opts)
         end
-        delete_temp_files({ body_file, headers_file, response.path }, opts.status)
+        delete_temp_files({ paths = { body_file, headers_file, response.path }, status = opts.status })
         if self.user_args.event then
           if not opts.silent then
             utils.fire(self.user_args.event, opts)
@@ -459,11 +453,10 @@ function Client:request(payload, actions, opts)
   if adapter.opts and adapter.opts.stream then
     local has_started_steaming = false
 
-    -- Turn off plenary's default compression
     request_opts["compressed"] = adapter.opts.compress or false
 
     -- This will be called multiple times until the stream is finished
-    request_opts["stream"] = self.methods.schedule_wrap(function(_, data)
+    request_opts["stream"] = self.methods.schedule_wrap(function(data)
       if data and data ~= "" then
         response.write(data)
         if data:match('^%s*{"error"') or data:match('^%s*{"type"%s*:%s*"error"') then
@@ -481,14 +474,14 @@ function Client:request(payload, actions, opts)
     end)
   end
 
-  local job = self.methods[Client.resolve_method(adapter)](request_opts)
-
   opts.id = opts.id or math.random(10000000)
   opts.adapter = adapter_event_data(adapter)
 
   if not opts.silent then
     utils.fire("RequestStarted", opts)
   end
+
+  local job = self.methods[Client.resolve_method(adapter)](request_opts)
 
   if job and job.args then
     log:debug("Request:\n%s", job.args)

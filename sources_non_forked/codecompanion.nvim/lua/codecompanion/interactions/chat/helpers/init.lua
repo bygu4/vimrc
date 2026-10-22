@@ -275,10 +275,11 @@ end
 
 ---Format file content with XML wrapper for LLM consumption
 ---@param path string
----@param opts? { message?: string, range?: table }
+---@param opts? { message?: string, name?: string, range?: table }
 ---@return { content: string, filetype: string, id: string, path: string, raw: string }
 function M.format_file_for_llm(path, opts)
   opts = opts or {}
+  local name = opts.name or path
 
   local raw_content = files.read(path)
   local filetype = vim.filetype.match({ filename = path })
@@ -302,7 +303,7 @@ function M.format_file_for_llm(path, opts)
       [[<attachment filepath="%s">%s:
 %s
 </attachment>]],
-      path,
+      name,
       "Here is the content from the file",
       file_contents
     )
@@ -311,21 +312,20 @@ function M.format_file_for_llm(path, opts)
   return {
     content = content,
     filetype = filetype,
-    id = "<file>" .. vim.fn.fnamemodify(path, ":.") .. "</file>",
+    id = "<file>" .. vim.fn.fnamemodify(name, ":.") .. "</file>",
     path = path,
     raw = raw_content,
   }
 end
 
 ---Add line numbers with an offset to content
----@param content string
----@param start_line number The starting line number
+---@param opts { content: string, start_line: number }
 ---@return string
-local function add_line_numbers_from(content, start_line)
+local function add_line_numbers_from(opts)
   local formatted = {}
-  local lines = vim.split(content, "\n")
+  local lines = vim.split(opts.content, "\n")
   for i, line in ipairs(lines) do
-    table.insert(formatted, fmt("%d |%s", start_line + i - 1, line))
+    table.insert(formatted, fmt("%d |%s", opts.start_line + i - 1, line))
   end
 
   return table.concat(formatted, "\n")
@@ -342,7 +342,7 @@ function M.format_viewport_range_for_llm(bufnr, range)
   local start_line, end_line = range[1], range[2]
 
   local buffer_content = buf_utils.get_content(bufnr, { start_line - 1, end_line })
-  local numbered_content = add_line_numbers_from(buffer_content, start_line)
+  local numbered_content = add_line_numbers_from({ content = buffer_content, start_line = start_line })
 
   local content = markdown.form_codeblock(numbered_content, { ft = info.filetype })
 

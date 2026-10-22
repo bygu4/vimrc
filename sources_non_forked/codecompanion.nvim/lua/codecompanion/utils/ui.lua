@@ -21,6 +21,47 @@ local M = {}
 ---@field height? number Default height if not specified in window
 ---@field winbar? string Winbar text to display at the top of the window
 
+---Show a table of keymaps from the config in a float
+---@param keymaps table<string, { modes?: table, description?: string, visible?: boolean }|false>
+---@param opts { title: string }
+---@return nil
+function M.show_keymaps(keymaps, opts)
+  local rows = {}
+  for _, map in pairs(keymaps) do
+    local keys = type(map) == "table" and map.visible ~= false and map.modes and map.modes.n or nil
+    if keys then
+      keys = vim.tbl_map(function(key)
+        return string.format("`%s`", key)
+      end, type(keys) == "table" and keys or { keys })
+      table.insert(rows, { keys = table.concat(keys, " or "), description = map.description })
+    end
+  end
+
+  table.sort(rows, function(a, b)
+    return a.keys < b.keys
+  end)
+
+  local width = 0
+  for _, row in ipairs(rows) do
+    width = math.max(width, #row.keys)
+  end
+
+  local lines = { "### Keymaps", "" }
+  for _, row in ipairs(rows) do
+    table.insert(lines, string.format(" %s%s_%s_", row.keys, string.rep(" ", width - #row.keys + 4), row.description))
+  end
+
+  M.create_float(lines, {
+    ft = "markdown",
+    height = #lines + 2,
+    lock = true,
+    relative = "editor",
+    style = "minimal",
+    title = opts.title,
+    width = width + 60,
+  })
+end
+
 ---Open a floating window with the provided lines
 ---@param lines table
 ---@param opts CodeCompanion.WindowOpts
@@ -137,9 +178,9 @@ M.set_virtual_text = function(bufnr, ns_id, message, opts)
 end
 
 ---Show a notification with virtual lines in a buffer
----@param bufnr number The buffer number to display the notification in
----@param opts table Options for the notification
----@return number The extmark ID
+---@param bufnr number
+---@param opts table
+---@return number extmark id
 function M.show_buffer_notification(bufnr, opts)
   opts = opts or {}
 
@@ -299,13 +340,12 @@ M.get_editor_height = function()
   return editor_height
 end
 
----@param items table
----@param format function
+---@param opts { items: table, format: function }
 ---@return table
-local function get_max_lengths(items, format)
+local function get_max_lengths(opts)
   local max_lengths = {}
-  for _, item in ipairs(items) do
-    local formatted = format(item)
+  for _, item in ipairs(opts.items) do
+    local formatted = opts.format(item)
     for i, field in ipairs(formatted) do
       local field_length = string.len(field)
       max_lengths[i] = math.max(max_lengths[i] or 0, field_length)
@@ -332,14 +372,13 @@ local function pad_string(str, max_length, padding)
   end
 end
 
----@param item table
----@param max_lengths table
+---@param opts { item: table, max_lengths: table }
 ---@return string
-local function pad_item(item, max_lengths)
+local function pad_item(opts)
   local padded_item = {}
-  for i, field in ipairs(item) do
-    if max_lengths[i] then -- Skip padding if there's no max length for this field
-      padded_item[i] = pad_string(field, max_lengths[i])
+  for i, field in ipairs(opts.item) do
+    if opts.max_lengths[i] then -- Skip padding if there's no max length for this field
+      padded_item[i] = pad_string(field, opts.max_lengths[i])
     else
       padded_item[i] = field
     end
@@ -353,14 +392,14 @@ end
 function M.action_palette_selector(items, opts)
   log:trace("Opening selector")
 
-  local max_lengths = get_max_lengths(items, opts.format)
+  local max_lengths = get_max_lengths({ items = items, format = opts.format })
 
   local select_opts = {
     prompt = opts.prompt,
     kind = "codecompanion.nvim",
     format_item = function(item)
       local formatted = opts.format(item)
-      return pad_item(formatted, max_lengths)
+      return pad_item({ item = formatted, max_lengths = max_lengths })
     end,
   }
 

@@ -1,6 +1,7 @@
 local Approvals = require("codecompanion.interactions.chat.tools.approvals")
 local Queue = require("codecompanion.interactions.chat.tools.runtime.queue")
 local Runner = require("codecompanion.interactions.chat.tools.runtime.runner")
+local agent_loop = require("codecompanion.interactions.chat.agent_loop")
 
 local config = require("codecompanion.config")
 local log = require("codecompanion.utils.log")
@@ -22,10 +23,9 @@ end
 
 ---Add a response to the chat buffer regarding a tool's execution
 ---@param exec CodeCompanion.Tools.Orchestrator
----@param llm_message string
----@param user_message? string
-local send_response_to_chat = function(exec, llm_message, user_message)
-  exec.tools.chat:add_tool_output(exec.tool, llm_message, user_message)
+---@param opts { llm_message: string, user_message?: string }
+local send_response_to_chat = function(exec, opts)
+  exec.tools.chat:add_tool_output(exec.tool, { content = opts.llm_message, display = opts.user_message })
 end
 
 ---Execute a shell command with platform-specific handling
@@ -47,10 +47,11 @@ local function execute_shell_command(opts, callback)
 end
 
 ---Converts a cmd-based tool to a function-based tool.
----@param tool CodeCompanion.Tools.Tool
----@param orchestrator CodeCompanion.Tools.Orchestrator
+---@param opts { tool: CodeCompanion.Tools.Tool, orchestrator: CodeCompanion.Tools.Orchestrator }
 ---@return CodeCompanion.Tools.Tool
-local function cmd_to_func_tool(tool, orchestrator)
+local function cmd_to_func_tool(opts)
+  local tool = opts.tool
+  local orchestrator = opts.orchestrator
   local timeout = tool.opts and tool.opts.timeout
 
   tool.cmds = vim
@@ -175,11 +176,10 @@ function Orchestrator:_setup_handlers()
       if self.tool.output and self.tool.output.cancelled then
         self.tool.output.cancelled(self.tool, { cmd = cmd, tools = self.tools })
       else
-        send_response_to_chat(
-          self,
-          fmt("The user cancelled the execution of the %s tool", self.tool.name),
-          fmt("Cancelled `%s`", self.tool.name)
-        )
+        send_response_to_chat(self, {
+          llm_message = fmt("The user cancelled the execution of the %s tool", self.tool.name),
+          user_message = fmt("Cancelled `%s`", self.tool.name),
+        })
       end
     end,
 
@@ -205,7 +205,7 @@ function Orchestrator:_setup_handlers()
           { cmd = cmd, tools = self.tools }
         )
       else
-        send_response_to_chat(self, fmt("Error calling `%s`", self.tool.name))
+        send_response_to_chat(self, { llm_message = fmt("Error calling `%s`", self.tool.name) })
       end
     end,
 
@@ -233,7 +233,7 @@ function Orchestrator:_setup_handlers()
           rejection = rejection .. fmt(': "%s"', opts.reason)
         end
         -- If no handler is set then return a default message
-        send_response_to_chat(self, rejection)
+        send_response_to_chat(self, { llm_message = rejection })
       end
     end,
 
@@ -249,7 +249,7 @@ function Orchestrator:_setup_handlers()
           { cmd = cmd, tools = self.tools }
         )
       else
-        send_response_to_chat(self, fmt("Executed `%s`", self.tool.name))
+        send_response_to_chat(self, { llm_message = fmt("Executed `%s`", self.tool.name) })
       end
     end,
   }
@@ -312,13 +312,14 @@ function Orchestrator:_label_completed()
     return
   end
 
-  pcall(
-    self.tools.chat.update_buf_line,
-    self.tools.chat,
-    label.line_number,
-    label.text,
-    { status = label.status, icon_id = label.icon_id, priority = 120, virt_text_pos = "inline" }
-  )
+  pcall(self.tools.chat.update_buf_line, self.tools.chat, {
+    line_number = label.line_number,
+    content = label.text,
+    status = label.status,
+    icon_id = label.icon_id,
+    priority = 120,
+    virt_text_pos = "inline",
+  })
 end
 
 ---When the tools coordinator is finished, finalize it via an autocmd
@@ -328,11 +329,12 @@ function Orchestrator:_finalize_tools()
   self.tools.tool = nil
   self.tools.chat.tool_orchestrator = nil
 
-  return utils.fire("ToolsFinished", {
+  utils.fire("ToolsFinished", {
     bufnr = self.tools.bufnr,
     id = self.id,
     status = self.tools.status,
   })
+  return agent_loop.after_tools(self.tools)
 end
 
 ---Setup the tool to be executed
@@ -354,7 +356,7 @@ function Orchestrator:setup_next_tool(input)
   self.handlers.setup() -- Call this early as run_command needs to setup its cmds dynamically
 
   -- Transform cmd-based tools to func-based
-  self.tool = cmd_to_func_tool(self.tool, self)
+  self.tool = cmd_to_func_tool({ tool = self.tool, orchestrator = self })
 
   -- Get the first command to run
   local cmd = self.tool.cmds[1]
@@ -444,10 +446,9 @@ function Orchestrator:_prompt_for_approval(args)
         keymap = keys.cancel,
         label = labels.cancel,
         callback = function()
-          self.output.cancelled(cmd)
-          self:finalize_tool()
-          self:cancel_pending_tools()
-          self:_finalize_tools()
+          -- Stop queued workflow prompts from auto-submitting once the chat is handed back
+          self.tools.chat:dispatch("on_cancelled")
+          self:cancel()
         end,
       },
     },
@@ -558,6 +559,8 @@ function Orchestrator:cancel()
   self:cancel_pending_tools()
 
   self.tools.tool = nil
+  self.tools.chat.tool_orchestrator = nil
+  utils.fire("ToolsFinished", { bufnr = self.tools.bufnr, id = self.id, status = self.tools.status })
   self.tools:reset({ auto_submit = false })
 end
 
@@ -597,10 +600,9 @@ function Orchestrator:error(args)
   end)
   if not ok then
     if self.tool and self.tool.function_call then
-      self.tools.chat:add_tool_output(
-        self.tool,
-        string.format("Internal error with `%s` tool: %s", self.tool.name, err)
-      )
+      self.tools.chat:add_tool_output(self.tool, {
+        content = string.format("Internal error with `%s` tool: %s", self.tool.name, err),
+      })
     end
   end
 
@@ -631,7 +633,9 @@ function Orchestrator:success(args)
   if not ok then
     log:error("Internal error with the %s success handler: %s", self.tool.name, err)
     if self.tool and self.tool.function_call then
-      self.tools.chat:add_tool_output(self.tool, string.format("Internal error with `%s` tool", self.tool.name))
+      self.tools.chat:add_tool_output(self.tool, {
+        content = string.format("Internal error with `%s` tool", self.tool.name),
+      })
     end
   end
 end

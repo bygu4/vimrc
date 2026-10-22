@@ -1,7 +1,7 @@
 <!-- panvimdoc-ignore-start -->
 
 <p align="center">
-<a href="https://codecompanion.olimorris.dev"><img src="https://github.com/user-attachments/assets/64da6a69-a54d-4799-b034-59d9efd27b76" alt="CodeCompanion.nvim" /></a>
+<a href="https://codecompanion.olimorris.dev"><img src="https://github.com/user-attachments/assets/73c5a28b-6110-4136-8bd3-2430a7b648f3" alt="CodeCompanion.nvim" /></a>
 </p>
 
 <p align="center">
@@ -30,7 +30,7 @@ Thank you to the following people:
 
 - :speech_balloon: [Copilot Chat](https://github.com/features/copilot) meets [Zed AI](https://zed.dev/blog/zed-ai), in Neovim
 - :zap: Integrates Neovim with LLMs and Agents in the CLI
-- :electric_plug: Support for LLMs from [Anthropic](https://platform.claude.com/docs/en/about-claude/models/overview),  [DeepSeek](https://www.deepseek.com), [Google Gemini](https://ai.google.dev/gemini-api/docs/models), [GitHub Copilot](https://github.com/features/copilot), [GitHub Models](https://docs.github.com/en/github-models), [Kimi](https://platform.kimi.ai), [Mistral](https://mistral.ai/), [Novita](https://novita.ai/), [Ollama](https://ollama.com/), [OpenAI](https://developers.openai.com/api/docs/models), Azure OpenAI, [OpenRouter](https://openrouter.ai/), [HuggingFace](https://huggingface.co/) and [xAI](https://docs.x.ai/developers/models) out of the box (or [bring your own](https://codecompanion.olimorris.dev/extending/adapters.html))
+- :electric_plug: Support for LLMs from [Anthropic](https://platform.claude.com/docs/en/about-claude/models/overview),  [DeepSeek](https://www.deepseek.com), [Google Gemini](https://ai.google.dev/gemini-api/docs/models), [GitHub Copilot](https://github.com/features/copilot), [Kimi](https://platform.kimi.ai), [Mistral](https://mistral.ai/), [Novita](https://novita.ai/), [Ollama](https://ollama.com/), [OpenAI](https://developers.openai.com/api/docs/models), Azure OpenAI, [OpenRouter](https://openrouter.ai/), [Hugging Face](https://huggingface.co/) and [xAI](https://docs.x.ai/developers/models) out of the box (or [bring your own](https://codecompanion.olimorris.dev/extending/adapters.html))
 - :robot: Support for [Agent Client Protocol](https://agentclientprotocol.com/overview/introduction), enabling coding with agents like [Augment Code](https://docs.augmentcode.com/cli/overview), [Cagent](https://github.com/docker/cagent) from Docker, [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview), [Codex](https://openai.com/codex), [Copilot CLI](https://github.com/features/copilot/cli), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [Goose](https://block.github.io/goose/), [Cursor CLI](https://cursor.com/docs/cli/overview), [Kimi CLI](https://github.com/MoonshotAI/kimi-cli), [Kiro](https://kiro.dev/docs/cli/), [Mistral Vibe](https://github.com/mistralai/mistral-vibe) and [OpenCode](https://opencode.ai)
 - :heart_hands: User contributed and supported [adapters](https://codecompanion.olimorris.dev/configuration/adapters-http#community-adapters)
 - :man_technologist: [Code reviews](https://codecompanion.olimorris.dev/usage/code-review) enabling you to comment on and approve/reject agent code
@@ -41,7 +41,7 @@ Thank you to the following people:
 - :sparkles: Built-in [prompt library](https://codecompanion.olimorris.dev/usage/action-palette.html) for common tasks like advice on LSP errors and code explanations
 - :building_construction: Create your own [custom prompts](https://codecompanion.olimorris.dev/configuration/prompt-library.html#creating-prompts), Editor Context and Slash Commands
 - :inbox_tray: Have [multiple chats](https://codecompanion.olimorris.dev/usage/chat-buffer/#multiple-chats) open at the same time
-- :art: Support for [images](https://codecompanion.olimorris.dev/usage/chat-buffer/#images-vision) and PDFs as input
+- :art: Support for [images](https://codecompanion.olimorris.dev/usage/chat-buffer/#images) and PDFs as input
 - :muscle: Async execution for fast performance
 
 <!-- panvimdoc-ignore-start -->
@@ -50,16 +50,16 @@ Thank you to the following people:
 
 <div align="center">
   <p>
-    <h3><a href="https://github.com/user-attachments/assets/aa109f1d-0ec9-4f08-bd9a-df99da03b9a4">The Chat Buffer</a></h3>
+    <h3><a href="https://github.com/user-attachments/assets/3cc83544-2690-49b5-8be6-51e671db52ef">The Chat Buffer</a></h3>
     <video controls muted src="https://github.com/user-attachments/assets/3cc83544-2690-49b5-8be6-51e671db52ef"></video>
   </p>
   <p>
     <h3><a href="https://github.com/user-attachments/assets/362b7cfd-e794-4d9c-9a74-90d5e2a87a32">Tools + Agentic Workflows</a></h3>
-    <video controls muted src="https://github.com/user-attachments/assets/59efa262-e768-4f36-9901-9d02b018fcf0"></video>
+    <video controls muted src="https://github.com/user-attachments/assets/362b7cfd-e794-4d9c-9a74-90d5e2a87a32"></video>
   </p>
   <p>
-    <h3><a href="https://github.com/user-attachments/assets/dcddcb85-cba0-4017-9723-6e6b7f080fee">Inline Interaction</a></h3>
-    <video controls muted src="https://github.com/user-attachments/assets/11a42705-d9de-4eb5-a9ab-c8a2772fb4d4"></video>
+    <h3><a href="https://github.com/user-attachments/assets/942f2868-db57-4a33-86f8-1dbfe904df07">Inline Interaction</a></h3>
+    <video controls muted src="https://github.com/user-attachments/assets/942f2868-db57-4a33-86f8-1dbfe904df07"></video>
   </p>
 </div>
 

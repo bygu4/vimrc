@@ -5,14 +5,12 @@ local markdown = require("codecompanion.utils.markdown")
 local fmt = string.format
 
 ---Search the current working directory for files matching the glob pattern.
----@param action { query: string, max_results: number }
----@param opts table
+---@param opts { action: { query: string, max_results: number }, max_results?: number }
 ---@return { status: "success"|"error", data: string }
-local function search(action, opts)
-  opts = opts or {}
-  local query = action.query
+local function search(opts)
+  local query = opts.action.query
 
-  local max_results = action.max_results or opts.max_results or 500 -- Default limit to prevent overwhelming results
+  local max_results = opts.action.max_results or opts.max_results or 500 -- Default limit to prevent overwhelming results
 
   if not query or query == "" then
     return {
@@ -71,7 +69,8 @@ return {
     ---@param input? any The output from the previous function call
     ---@return { status: "success"|"error", data: string }
     function(self, args, input)
-      return search(args, self.tool.opts)
+      local tool_opts = self.tool.opts or {}
+      return search({ action = args, max_results = tool_opts.max_results })
     end,
   },
   schema = {
@@ -138,11 +137,11 @@ return {
         local files = #data
         local results_msg =
           fmt("Searched files for `%s`, %d results\n%s", query, files, markdown.form_codeblock(output))
-        chat:add_tool_output(self, fmt(llm_output, results_msg), "")
+        chat:add_tool_output(self, { content = fmt(llm_output, results_msg), display = false })
       else
         -- No files found - data is a string message
         local no_results_msg = fmt("Searched files for `%s`, no results", query)
-        chat:add_tool_output(self, fmt(llm_output, no_results_msg), "")
+        chat:add_tool_output(self, { content = fmt(llm_output, no_results_msg), display = false })
       end
     end,
 
@@ -157,7 +156,7 @@ return {
 
       local error_output =
         fmt("Searched files for `%s`, error:\n\n%s", query, markdown.form_codeblock(errors, { ft = "txt" }))
-      chat:add_tool_output(self, error_output)
+      chat:add_tool_output(self, { content = error_output })
     end,
 
     ---Rejection message back to the LLM

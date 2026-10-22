@@ -1,6 +1,5 @@
 ---@class CodeCompanion.Tools
 ---@field adapter CodeCompanion.HTTPAdapter The adapter in use for the chat
----@field aug number The augroup for the tool
 ---@field bufnr number The buffer of the chat buffer
 ---@field constants table<string, string> The constants for the tool
 ---@field chat CodeCompanion.Chat The chat buffer that initiated the tool
@@ -13,7 +12,7 @@
 ---@field tools_config table The available tools for the tool system
 
 local Orchestrator = require("codecompanion.interactions.chat.tools.orchestrator")
-local approvals = require("codecompanion.interactions.chat.tools.approvals")
+local agent_loop = require("codecompanion.interactions.chat.agent_loop")
 local config = require("codecompanion.config")
 local tool_filter = require("codecompanion.interactions.chat.tools.filter")
 local triggers = require("codecompanion.triggers")
@@ -51,16 +50,16 @@ function Tools:_pattern(tool)
 end
 
 ---Handle missing or invalid tool errors by reporting them to the LLM
----@param tool table The tool that failed
----@param error_message string The error message
+---@param opts { tool: table, error_message: string }
 ---@return nil
-function Tools:_handle_tool_error(tool, error_message)
+function Tools:_handle_tool_error(opts)
+  local tool = opts.tool
   local name = tool["function"].name
   local tool_call = vim.deepcopy(tool)
   tool_call.name = name
   tool_call.function_call = tool_call
 
-  log:error(error_message)
+  log:error(opts.error_message)
 
   local available_tools_msg = ""
   if self.chat and self.chat.tool_registry and self.chat.tool_registry.in_use then
@@ -81,7 +80,10 @@ function Tools:_handle_tool_error(tool, error_message)
   end
 
   self.status = CONSTANTS.STATUS_ERROR
-  self.chat:add_tool_output(tool_call, string.format("Tool `%s` not found. %s", name, available_tools_msg), "")
+  self.chat:add_tool_output(tool_call, {
+    content = string.format("Tool `%s` not found. %s", name, available_tools_msg),
+    display = false,
+  })
 end
 
 ---Resolve and prepare a tool for execution
@@ -128,11 +130,10 @@ function Tools:_resolve_and_prepare_tool(tool)
       local ok, decoded = pcall(vim.json.decode, args)
       if not ok then
         log:error("Couldn't decode the tool arguments: %s", args)
-        self.chat:add_tool_output(
-          prepared_tool,
-          string.format('You made an error in calling the %s tool: "%s"', name, decoded),
-          ""
-        )
+        self.chat:add_tool_output(prepared_tool, {
+          content = string.format('You made an error in calling the %s tool: "%s"', name, decoded),
+          display = false,
+        })
         self.status = CONSTANTS.STATUS_ERROR
         return nil, "JSON parsing failed", true -- Special flag to indicate this was handled
       end
@@ -160,7 +161,6 @@ end
 function Tools.new(args)
   local self = setmetatable({
     adapter = args.adapter,
-    aug = api.nvim_create_augroup(CONSTANTS.AUTOCMD_GROUP .. ":" .. args.bufnr, { clear = true }),
     bufnr = args.bufnr,
     chat = {},
     constants = CONSTANTS,
@@ -197,48 +197,6 @@ function Tools:refresh(opts)
   return self
 end
 
----Set the autocmds for the tool
----@return nil
-function Tools:set_autocmds()
-  api.nvim_create_autocmd("User", {
-    desc = "Handle responses from the Tool system",
-    group = self.aug,
-    pattern = "CodeCompanionTools*",
-    callback = function(request)
-      if request.data.bufnr ~= self.bufnr then
-        return
-      end
-
-      if request.match == "CodeCompanionToolsStarted" then
-        log:info("[Tool System] Initiated")
-      elseif request.match == "CodeCompanionToolsFinished" then
-        return vim.schedule(function()
-          local auto_submit = function()
-            return self.chat:submit({
-              auto_submit = true,
-              callback = function()
-                self:reset({ auto_submit = true })
-              end,
-            })
-          end
-
-          if approvals:get_mode(self.bufnr) ~= "ask" then
-            return auto_submit()
-          end
-          if self.status == CONSTANTS.STATUS_ERROR and self.tools_config.opts.auto_submit_errors then
-            return auto_submit()
-          end
-          if self.status == CONSTANTS.STATUS_SUCCESS and self.tools_config.opts.auto_submit_success then
-            return auto_submit()
-          end
-
-          self:reset({ auto_submit = false })
-        end)
-      end
-    end,
-  })
-end
-
 ---Execute the tool in the chat buffer based on the LLM's response
 ---@param chat CodeCompanion.Chat
 ---@param tools table The tools requested by the LLM
@@ -249,9 +207,6 @@ function Tools:execute(chat, tools)
 
   -- Wrap the entire tool execution in error handling
   local function safe_execute()
-    -- NOTE: Set autocmds early so that errors can be handled properly
-    self:set_autocmds()
-
     local orchestrator = Orchestrator.new(self, id)
 
     for _, tool in ipairs(tools) do
@@ -260,7 +215,7 @@ function Tools:execute(chat, tools)
       if not resolved_tool then
         -- NOTE: A JSON error has already been reported to the LLM
         if not is_json_error then
-          self:_handle_tool_error(tool, error_msg or "Unknown Error occurred")
+          self:_handle_tool_error({ tool = tool, error_message = error_msg or "Unknown Error occurred" })
         end
       else
         self.tool = resolved_tool --[[@as CodeCompanion.Tools.Tool]]
@@ -270,7 +225,8 @@ function Tools:execute(chat, tools)
 
     -- If no tools were resolved, finalize with error status
     if orchestrator.queue:is_empty() then
-      return utils.fire("ToolsFinished", { id = id, bufnr = self.bufnr })
+      utils.fire("ToolsFinished", { id = id, bufnr = self.bufnr })
+      return agent_loop.after_tools(self)
     end
 
     utils.fire("ToolsStarted", { id = id, bufnr = self.bufnr })
@@ -285,6 +241,7 @@ function Tools:execute(chat, tools)
     vim.schedule(function()
       utils.fire("ToolsFinished", { id = id, bufnr = self.bufnr })
     end)
+    agent_loop.after_tools(self)
   end
 end
 
@@ -389,8 +346,6 @@ end
 function Tools:reset(opts)
   opts = opts or {}
 
-  api.nvim_clear_autocmds({ group = self.aug })
-
   self.extracted = {}
   self.status = CONSTANTS.STATUS_SUCCESS
   self.stderr = {}
@@ -400,41 +355,18 @@ function Tools:reset(opts)
   log:info("[Tools] Completed")
 end
 
----Add an error message to the chat buffer
----@param error string
----@return CodeCompanion.Tools
-function Tools:add_error_to_chat(error)
-  self.chat:add_message({
-    role = config.constants.USER_ROLE,
-    content = error,
-  }, { visible = false })
-
-  --- Alert the user that the error message has been shared
-  self.chat:add_buf_message({
-    role = config.constants.USER_ROLE,
-    content = "Please correct for the error message I've shared",
-  })
-
-  if self.tools_config.opts and self.tools_config.opts.auto_submit_errors then
-    self.chat:submit()
-  end
-
-  return self
-end
-
 ---Load a factory and pass the tool table through it
----@param extends string The factory name
 ---@param tool table The tool table (factory picks what it needs)
 ---@return CodeCompanion.Tools.Tool|nil
-local function resolve_factory(extends, tool)
-  local factory_path = FACTORIES[extends]
+local function resolve_factory(tool)
+  local factory_path = FACTORIES[tool.extends]
   if not factory_path then
-    return log:error("[Tools] Unknown factory: %s", extends)
+    return log:error("[Tools] Unknown factory: %s", tool.extends)
   end
 
   local ok, factory = pcall(require, factory_path)
   if not ok then
-    return log:error("[Tools] Failed to load factory %s: %s", extends, factory)
+    return log:error("[Tools] Failed to load factory %s: %s", tool.extends, factory)
   end
 
   return factory(tool)
@@ -453,14 +385,14 @@ end
 function Tools.resolve(tool)
   -- 1. Factory extension (table in config)
   if tool.extends then
-    return resolve_factory(tool.extends, tool)
+    return resolve_factory(tool)
   end
 
   -- 2. Path-based resolution (module path or file path)
   if type(tool.path) == "string" then
     local resolved = resolve_path(tool.path)
     if resolved and resolved.extends then
-      return resolve_factory(resolved.extends, resolved)
+      return resolve_factory(resolved)
     end
     return resolved
   end
@@ -470,7 +402,7 @@ function Tools.resolve(tool)
     ---@type CodeCompanion.Tools.Unresolved
     local resolved = tool.callback()
     if resolved and resolved.extends then
-      return resolve_factory(resolved.extends, resolved)
+      return resolve_factory(resolved)
     end
     return resolved
   end

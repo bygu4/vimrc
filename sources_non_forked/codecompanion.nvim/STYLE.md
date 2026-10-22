@@ -78,7 +78,7 @@ local function capture_warnings()
 - `snake_case` for files, functions, locals, and table keys
 - `PascalCase` for classes and LuaCATS type names
 - `SCREAMING_SNAKE_CASE` only for module-level constant tables and values, never for a local inside a function
-- `_leading_underscore` for private functions
+- `_leading_underscore` for internal functions on a module or class table (`M._diff`, `Chat:_submit_http`). A `local function` is already private, so it takes no underscore
 
 **Names must be explicit and domain-specific.** Write `pattern` not `pat`, `should_include` not `include_ok`. Avoid generic placeholder names like `ctx`, `data`, `obj`, `tmp`, `res` - reach for the domain word instead: `permission`, `request`, `source`, `adapter`, `chat`.
 
@@ -113,26 +113,33 @@ local function add_response(response, lines)
 
 Positional parameters don't scale. Adding one means touching the signature, every call site, and every annotation. An `opts` table absorbs the new parameter in a single place, and call sites that don't care about it stay as they are.
 
-**Default to `opts` alone.** A leading positional is earned, not assumed. It has to be the single subject the function acts on, and it has to be stable enough that it will never be replaced or joined by a sibling - a `Chat`, a payload, the text being wrapped. Everything else goes in `opts`: `Chat:add_message(data, opts)`, `Client:send(payload, opts)`, `M.get_settings_key(chat, opts)`, `markdown.form_codeblock(content, opts)`.
+**Default to `opts` alone.** The one thing that may lead is the object the function operates on: `self`, a `Chat`, or a module's equivalent instance such as a `Background`, `Inline` or `DiffUI`. An object like that will never be replaced or joined by a sibling, so it stays positional: `add_system_prompt(chat, opts)`, `ask_sync(background, opts)`.
+
+Data never leads, even when it's what the function acts on - messages, content, a path, a buffer number, a tool's arguments. Data changes shape and gains siblings, so it goes in `opts`. A function with a single data parameter may take it positionally; once it needs a second, both go in `opts`.
 
 If you are weighing whether an argument qualifies, it doesn't. Put it in `opts`.
+
+The exceptions are a trailing `callback`, which may stay positional, and a function whose signature its caller fixes: a `table.sort` comparator, an autocmd or keymap callback, a metamethod, a handler passed to a Neovim or libuv API.
 
 ```lua
 -- ❌ Three positionals, and a fourth means editing every caller
 function add_header(name, start_from, contents)
 
--- ✅ No subject, so `opts` is the only parameter
+-- ✅ No object, so `opts` is the only parameter
 ---@param opts? { name?: string, start_from?: number, contents?: string[] }
 function add_header(opts)
   opts = opts or {}
 
--- ❌ `ft` is data about the block, not a second subject
-function form_codeblock(content, ft)
+-- ❌ `messages` is data, not an object
+local function find_tool_call(messages, id)
 
--- ✅ `content` is the subject and will never be anything else
----@param opts? { ft?: string }
-function form_codeblock(content, opts)
-  opts = opts or {}
+-- ✅
+---@param opts { messages: CodeCompanion.Chat.Messages, id: string }
+local function find_tool_call(opts)
+
+-- ✅ `chat` is the object the function operates on
+---@param opts { tool: string, id: string }
+local function add_system_prompt(chat, opts)
 ```
 
 Normalise an optional table on the first line with `opts = opts or {}`, or with `vim.tbl_extend("force", opts or {}, { ... })` when you're layering defaults over it. Annotate the shape inline on the `@param` - `---@param opts? { auto_submit?: boolean }` - so callers can see the keys without opening the function.
@@ -164,7 +171,7 @@ Tests use [Mini.Test](https://github.com/nvim-mini/mini.nvim/blob/main/readmes/m
 
 **File layout mirrors the source tree.** `lua/codecompanion/interactions/chat/parser.lua` is tested by `tests/interactions/chat/test_parser.lua`. Don't invent a suffix like `test_parser_resilience.lua` for a subset of a module's behaviour - add cases to the module's existing test file.
 
-**Test names follow the existing suite.** The pattern is `T["<Subject>"]["<what it does>"]`, where the subject is the capitalised module or feature (`T["Chat"]`, `T["Context"]`, `T["Keymaps"]`) and the case name completes the sentence "it ...". Keep them short and behavioural.
+**Test names follow the existing suite.** The pattern is `T["<Subject>"]["<what it does>"]`, where the subject is the module or feature under test (`T["Chat"]`, `T["Context"]`, `T["Keymaps"]`) and the case name completes the sentence "it ...". Keep them short and behavioural.
 
 ```lua
 -- ✅ Matches the suite
@@ -175,6 +182,13 @@ T["Context"]["Cannot be added twice with the same id"] = function()
 -- ❌ Narrative prose that reads nothing like its neighbours
 T["Parser"]["an unterminated fence does not eat the next prompt"] = function()
 T["Parser"]["a balanced response leaves the prompt extractable"] = function()
+```
+
+When a pair of cases pins down both sides of a behaviour, capitalise the contrasting words so they read as a pair:
+
+```lua
+T["Tools"]["DOES NOT truncate a tool that is INSIDE the limit"] = function()
+T["Tools"]["truncates a tool that is OUTSIDE the limit"] = function()
 ```
 
 **Test what the change actually does.** Comprehensive-looking tests that never exercise the edge case are worse than no tests. Don't test a schema mirroring itself, and don't test that a shared utility passes its errors through.

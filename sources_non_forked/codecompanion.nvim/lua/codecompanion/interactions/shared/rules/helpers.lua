@@ -12,12 +12,11 @@ local fmt = string.format
 local M = {}
 
 ---Recursively expand rules groups (supports groups of groups)
----@param picker_items string[] Flat output list to mutate
----@param group_path string Display name path (e.g. "parent/child")
----@param group_cfg table Group config to expand
----@param parent_cfg? { parser?: any, opts?: table, description?: string } Inherited values from parent
+---@param opts { group_cfg: table, picker_items: string[], group_path: string, parent_cfg?: { parser?: any, opts?: table, description?: string } }
 ---@return nil
-local function expand_rules_group(picker_items, group_path, group_cfg, parent_cfg)
+local function expand_rules_group(opts)
+  local group_cfg = opts.group_cfg
+  local parent_cfg = opts.parent_cfg
   local inherited = {
     parser = group_cfg.parser or (parent_cfg and parent_cfg.parser or nil),
     opts = vim.tbl_extend("force", parent_cfg and parent_cfg.opts or {}, group_cfg.opts or {}),
@@ -28,8 +27,8 @@ local function expand_rules_group(picker_items, group_path, group_cfg, parent_cf
 
   -- If this group holds a list of files, add it as a selectable picker item
   if utils.is_array(files) then
-    table.insert(picker_items, {
-      name = group_path,
+    table.insert(opts.picker_items, {
+      name = opts.group_path,
       description = inherited.description,
       opts = inherited.opts or {},
       parser = inherited.parser,
@@ -41,8 +40,13 @@ local function expand_rules_group(picker_items, group_path, group_cfg, parent_cf
   -- Otherwise, recurse into subgroups
   for subgroup_name, subgroup_config in pairs(files) do
     if type(subgroup_config) == "table" then
-      local child_path = group_path .. "/" .. subgroup_name
-      expand_rules_group(picker_items, child_path, subgroup_config, inherited)
+      local child_path = opts.group_path .. "/" .. subgroup_name
+      expand_rules_group({
+        group_cfg = subgroup_config,
+        picker_items = opts.picker_items,
+        group_path = child_path,
+        parent_cfg = inherited,
+      })
     end
   end
 end
@@ -79,7 +83,7 @@ function M.list(chat)
         })
       else
         -- If the rules contains multiple groups
-        expand_rules_group(picker_items, name, cfg, nil)
+        expand_rules_group({ group_cfg = cfg, picker_items = picker_items, group_path = name })
       end
     end
     ::continue::
@@ -109,6 +113,22 @@ local function is_enabled(chat)
   return enabled == true
 end
 
+---Turn an `autoload` setting into a list of rule group names
+---@param autoload string|string[]|fun(): string|string[]
+---@return string[]|nil
+function M.get_group_names(autoload)
+  if type(autoload) == "function" then
+    autoload = autoload()
+    assert(type(autoload) == "string" or type(autoload) == "table", "autoload must return a string or table of strings")
+  end
+  if type(autoload) == "string" then
+    return { autoload }
+  end
+  if type(autoload) == "table" then
+    return vim.deepcopy(autoload)
+  end
+end
+
 ---Add callbacks to a chat creation request
 ---@param args table
 ---@param rules_name? string The name of the rules instance to use (if any)
@@ -119,19 +139,8 @@ function M.add_callbacks(args, rules_name)
     return args.callbacks
   end
 
-  local autoload = rules_name or rules.autoload
-  local groups = {}
-  if type(autoload) == "string" then
-    groups = { autoload }
-  elseif type(autoload) == "table" then
-    groups = vim.deepcopy(autoload)
-  elseif type(autoload) == "function" then
-    groups = autoload()
-    assert(type(groups) == "string" or type(groups) == "table", "autoload must return a string or table of strings")
-    if type(groups) == "string" then
-      groups = { groups }
-    end
-  else
+  local groups = M.get_group_names(rules_name or rules.autoload)
+  if not groups then
     return args.callbacks
   end
 
@@ -177,11 +186,24 @@ function M.add_context(files, chat)
       end
 
       local content = fmt("Sharing `%s`:\n\n---\n%s\n---", file.path, file.content)
-      chat:add_context({ content = content }, "rules", id, {
-        path = file.path,
-      })
+      chat:add_context({ content = content }, { source = "rules", id = id, path = file.path })
     end
   end
+end
+
+---Find a file that a rules file includes, in the cwd first and then the wider filesystem
+---@param included_path string
+---@return string|nil
+function M.resolve_included_path(included_path)
+  local path = vim.fs.normalize(included_path)
+  local in_cwd = vim.fs.joinpath(vim.fn.getcwd(), path)
+  if file_utils.exists(in_cwd) then
+    return in_cwd
+  end
+  if file_utils.exists(path) then
+    return path
+  end
+  log:warn("Could not find the rules file `%s`", path)
 end
 
 ---Add a file or buffer as context to the chat
@@ -192,16 +214,9 @@ function M.add_files_or_buffers(included_files, chat)
   vim.iter(included_files):each(function(f)
     local opts = {}
 
-    local path = vim.fs.normalize(f)
-
-    -- Check if the file exists in the current working directory
-    if file_utils.exists(vim.fs.joinpath(vim.fn.getcwd(), path)) then
-      path = vim.fs.joinpath(vim.fn.getcwd(), path)
-    else
-      -- Otherwise, check the wider filesystem
-      if not file_utils.exists(path) then
-        return log:warn("Could not find the rules file `%s`", path)
-      end
+    local path = M.resolve_included_path(f)
+    if not path then
+      return
     end
 
     -- Use <rules> ID format to match add_context() and prevent duplicates
@@ -229,20 +244,18 @@ function M.add_files_or_buffers(included_files, chat)
         end
       end
 
-      return chat:add_context({ content = buffer.content }, "rules", id, {
-        bufnr = bufnr,
-        path = path,
-        context_opts = opts,
-      })
+      return chat:add_context(
+        { content = buffer.content },
+        { source = "rules", id = id, bufnr = bufnr, path = path, context_opts = opts }
+      )
     end
 
     -- Otherwise, add it as file context
     local ok, file = pcall(chat_helpers.format_file_for_llm, path, opts)
-    if ok then
-      chat:add_context({ content = file.content }, "rules", id, {
-        path = path,
-      })
+    if not ok then
+      return log:error("[Rules] Could not share `%s`: %s", path, file)
     end
+    chat:add_context({ content = file.content }, { source = "rules", id = id, path = path })
   end)
 end
 

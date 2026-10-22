@@ -5,10 +5,10 @@ local markdown = require("codecompanion.utils.markdown")
 local fmt = string.format
 
 ---Build the ripgrep command for a search
----@param action { query: string, is_regexp: boolean?, include_pattern: string? }
----@param opts table
+---@param opts { action: { query: string, is_regexp: boolean?, include_pattern: string? }, max_results?: number, respect_gitignore?: boolean }
 ---@return string[]
-local function build_command(action, opts)
+local function build_command(opts)
+  local action = opts.action
   local cmd = { "rg" }
   local cwd = vim.fn.getcwd()
   local max_results = opts.max_results or 100
@@ -58,10 +58,10 @@ local function build_command(action, opts)
 end
 
 ---Turn ripgrep's output into `filepath:line` entries
----@param result vim.SystemCompleted
----@param max_results number
+---@param opts { result: vim.SystemCompleted, max_results: number }
 ---@return { status: "success"|"error", data: string|table }
-local function parse_output(result, max_results)
+local function parse_output(opts)
+  local result = opts.result
   if result.code ~= 0 then
     local error_msg = result.stderr or "Unknown error"
 
@@ -99,7 +99,7 @@ local function parse_output(result, max_results)
   local count = 0
 
   for line in output:gmatch("[^\n]+") do
-    if count >= max_results then
+    if count >= opts.max_results then
       break
     end
 
@@ -146,12 +146,16 @@ return {
       end
 
       local tool_opts = self.tool.opts or {}
-      local cmd = build_command(args, tool_opts)
+      local cmd = build_command({
+        action = args,
+        max_results = tool_opts.max_results,
+        respect_gitignore = tool_opts.respect_gitignore,
+      })
       log:debug("[Grep Search Tool] Running command: %s", table.concat(cmd, " "))
 
       local cb = vim.schedule_wrap(opts.output_cb)
       opts.register_job(vim.system(cmd, { text = true, timeout = 30000 }, function(result)
-        cb(parse_output(result, tool_opts.max_results or 100))
+        cb(parse_output({ result = result, max_results = tool_opts.max_results or 100 }))
       end))
     end,
   },
@@ -228,11 +232,11 @@ Refers to line 335 of the init.lua file</grepSearchTool>]]
         -- Results were found - data is an array of file paths
         local results = #data
         local content = fmt("Searched text for `%s`, %d results\n%s", query, results, markdown.form_codeblock(output))
-        chat:add_tool_output(self, fmt(llm_output, content), "")
+        chat:add_tool_output(self, { content = fmt(llm_output, content), display = false })
       else
         -- No results found - data is a string message
         local content = fmt("Searched text for `%s`, no results", query)
-        chat:add_tool_output(self, fmt(llm_output, content), "")
+        chat:add_tool_output(self, { content = fmt(llm_output, content), display = false })
       end
     end,
 
@@ -246,7 +250,7 @@ Refers to line 335 of the init.lua file</grepSearchTool>]]
       log:debug("[Grep Search Tool] Error output: %s", stderr)
 
       local content = fmt("Searched text for `%s`, error:\n%s", query, markdown.form_codeblock(errors))
-      chat:add_tool_output(self, content)
+      chat:add_tool_output(self, { content = content })
     end,
 
     ---Rejection message back to the LLM

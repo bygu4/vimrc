@@ -1,7 +1,7 @@
-local Curl = require("plenary.curl")
+local Curl = require("codecompanion.utils.curl")
 local config = require("codecompanion.config")
 local log = require("codecompanion.utils.log")
-local openai = require("codecompanion.adapters.http.openai")
+local openai = require("codecompanion.adapters.http.openai_legacy")
 
 -- Cache variables for models
 local _cached_models
@@ -22,16 +22,14 @@ local function get_models(adapter)
   local headers = {
     ["User-Agent"] = "CodeCompanion.nvim",
   }
-  local ok, response = pcall(function()
-    return Curl.get(url, {
-      sync = true,
-      headers = headers,
-      insecure = config.adapters.http.opts.allow_insecure,
-      proxy = config.adapters.http.opts.proxy,
-    })
-  end)
-  if not ok then
-    log:error("Could not get Hugging Face models from %s. Error: %s", url, response)
+  local response, err = Curl.get_sync({
+    url = url,
+    headers = headers,
+    insecure = config.adapters.http.opts.allow_insecure,
+    proxy = config.adapters.http.opts.proxy,
+  })
+  if not response then
+    log:error("Could not get Hugging Face models from %s. Error: %s", url, err.message)
     return {}
   end
   local ok2, models_data = pcall(vim.json.decode, response.body)
@@ -128,9 +126,6 @@ return {
     end,
     chat_output = function(self, data, tools)
       return openai.handlers.chat_output(self, data, tools)
-    end,
-    inline_output = function(self, data, context)
-      return openai.handlers.inline_output(self, data, context)
     end,
     on_exit = function(self, data)
       return openai.handlers.on_exit(self, data)

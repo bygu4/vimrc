@@ -7,7 +7,7 @@ This is a Neovim plugin written in Lua, which allows developers to code with LLM
 - `make format` - StyLua (120 cols, 2 spaces). Run before committing.
 - `make test` - full test suite (Mini.Test)
 - `make test_file FILE=path` - targeted tests
-- `make docs` - regenerate vimdoc. Run this after changing any docs pages. Read `VOICE.md` before editing anything in `doc/`
+- `make docs` - regenerate vimdoc. Run this after changing any docs pages. Read `.codecompanion/skills/writing-docs/SKILL.md` before editing anything in `doc/`
 
 ## Code conventions
 
@@ -15,13 +15,13 @@ The full style guide, with worked examples:
 
 @STYLE.md
 
-- **Naming:** snake_case for files/functions, PascalCase for classes, underscore prefix for private functions
+- **Naming:** snake_case for files/functions, PascalCase for classes, underscore prefix for internal functions on a module or class table (`M._diff`), never on a `local function`
 - **Explicit names:** `pattern` not `pat`, `should_include` not `include_ok`
 - **Readable code:** names, variables, and control flow should read like clean English. Avoid generic names like `ctx` - use domain-specific names (`permission`, `request`, `source`)
 - **Plain language:** avoid jargon shortcuts in code, comments, commit messages, and chat. Don't say "no-op" - say what the code actually does ("returns unchanged", "does nothing", "skipped because already edited")
 - **Comments earn their place:** don't restate what a readable line of code already says. If a guard like `if type(x) ~= "number" then return end` is self-evident, a comment explaining it is noise. Comment the *why* that isn't in the code (e.g. `-- NOTE: Not handling token tables yet`), not the *what*
 - **Don't narrate every change:** the maintainer is an expert who knows this codebase. Do NOT add a comment to explain routine code (`-- Clear the modified flag`, `-- Loop over the messages`, `-- Return early`). Default to no comment. Reserve comments for genuinely non-obvious *why* - a subtle API quirk, a workaround, an ordering constraint - the kind of thing that would trip up even a reader who knows the codebase
-- **Function params:** take an `opts` table, not a list of positional args - a new parameter then costs one edit instead of every call site. Default to `opts` alone. A leading positional is earned, not assumed: it must be the single subject the function acts on and stable enough that it will never be replaced or joined by a sibling (`Chat:add_message(data, opts)`, `markdown.form_codeblock(content, opts)`). If you're weighing whether an argument qualifies, it doesn't. Normalise it on the first line with `opts = opts or {}` and annotate the shape inline: `---@param opts? { auto_submit?: boolean }`
+- **Function params:** take an `opts` table, not a list of positional args - a new parameter then costs one edit instead of every call site. Default to `opts` alone. Only the object the function operates on may lead - `self`, `chat`, or a module's equivalent instance (`add_system_prompt(chat, opts)`, `ask_sync(background, opts)`). Data never leads, even when it's the subject - messages, content, a path, a buffer number all go in `opts`. A function with a single data parameter may take it positionally; once it needs a second, both go in `opts`. A trailing `callback` may stay positional. If you're weighing whether an argument qualifies, it doesn't. Normalise it on the first line with `opts = opts or {}` and annotate the shape inline: `---@param opts? { auto_submit?: boolean }`
 - **Error handling:** `pcall` + `log:error()`, return nil on failure
 - **Type annotations:** LuaCATS for public APIs. Keep doc blocks concise - one description line, params should be self-explanatory without inline comments
 - **Function descriptions:** exactly one line. No multi-paragraph rationale, no usage examples, no "why we cache this" essays - that belongs in commit messages or a single inline `--` comment at the relevant line. If you can't summarise the function in one line, the function is doing too much
@@ -35,8 +35,10 @@ Core: `lua/codecompanion/`
 
 - **Interactions** (`interactions/`): `chat/`, `inline/`, `cmd.lua`, `init.lua` (workflows)
 - **Adapters** (`adapters/`): `http/` (Anthropic, OpenAI, Copilot, Ollama, Gemini, etc.), `acp/` (Claude Code, Codex, etc.)
-- **Tools** (`interactions/chat/tools/builtin/`): `ask_questions`, `run_command`, `read_file`, `create_file`, `delete_file`, `insert_edit_into_file/`, `grep_search`, `file_search`, `web_search`, `fetch_webpage`, `memory`, `get_changed_files`, `get_diagnostics`, `cmd_tool` (factory for custom command tools)
-- **Slash Commands** (`interactions/chat/slash_commands/builtin/`): `/buffer`, `/command`, `/compact`, `/fetch`, `/file`, `/help`, `/image`, `/mcp`, `/mode`, `/now`, `/rules`, `/symbols`
+- **Harness:** for HTTP adapters, CodeCompanion is the harness - system prompt, tools, approvals, context management and the agent loop. ACP adapters bring their own harness, which is why the built-in tools are HTTP-only
+- **Agent loop** (`interactions/chat/agent_loop.lua`): response → run tools (`tools/orchestrator.lua`) → send output back, repeating until the LLM responds without a tool call. Stop and Cancel end the loop; Reject sends the rejection to the LLM and the loop carries on
+- **Tools** (`interactions/chat/tools/builtin/`): `ask_questions`, `run_command`, `read_file`, `create_file`, `delete_file`, `edit_file/`, `grep_search`, `file_search`, `web_search`, `fetch_webpage`, `memory`, `get_changed_files`, `get_diagnostics`, `cmd_tool` (factory for custom command tools)
+- **Slash Commands** (`interactions/chat/slash_commands/builtin/`): `/acp_session_options`, `/buffer`, `/command`, `/compact`, `/fetch`, `/file`, `/file-from-url`, `/fork`, `/help`, `/mcp`, `/mcp-prompts`, `/now`, `/rename`, `/resume`, `/rules`, `/save`, `/share`, `/skills`, `/skills-group`, `/symbols`, `/tools`
 - **Editor Context** (`interactions/chat/editor_context/`): `buffer`, `buffers`, `diagnostics`, `diff`, `messages`, `quickfix`, `selection`, `terminal`, `viewport`
 - **Config:** `config.lua` - tool groups (`agent`, `files`), adapter defaults, all settings
 - **Entry point:** `plugin/codecompanion.lua` → `lua/codecompanion/init.lua`

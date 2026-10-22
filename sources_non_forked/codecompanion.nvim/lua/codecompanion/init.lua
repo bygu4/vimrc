@@ -10,11 +10,12 @@ local _version
 
 -- Lazy load context_utils
 local context_utils
-local function get_context(bufnr, args)
+---@param opts { bufnr: number, args?: table }
+local function get_context(opts)
   if not context_utils then
     context_utils = require("codecompanion.utils.context")
   end
-  return context_utils.get(bufnr, args)
+  return context_utils.get(opts.bufnr, opts.args)
 end
 
 ---@class CodeCompanion
@@ -38,11 +39,21 @@ end
 ---@param args table
 ---@return nil
 CodeCompanion.inline = function(args)
-  local context = get_context(api.nvim_get_current_buf(), args)
+  local context = get_context({ bufnr = api.nvim_get_current_buf(), args = args })
   local inline = require("codecompanion.interactions.inline").new({ buffer_context = context })
-  if inline then
-    inline:prompt(args.args)
+  if not inline then
+    return
   end
+
+  if vim.trim(args.args or "") ~= "" then
+    return inline:prompt(args.args)
+  end
+
+  require("codecompanion.interactions.inline.ui").open_input(inline, {
+    on_submit = function(prompt)
+      inline:prompt(prompt)
+    end,
+  })
 end
 
 ---Accept the next word of code completion
@@ -70,7 +81,7 @@ end
 CodeCompanion.prompt = function(alias, args)
   local actions = require("codecompanion.action_palette")
 
-  local context = get_context(api.nvim_get_current_buf(), args)
+  local context = get_context({ bufnr = api.nvim_get_current_buf(), args = args })
   local prompt = actions.resolve_from_alias(alias, context)
 
   if not prompt then
@@ -88,7 +99,7 @@ CodeCompanion.add = function(args)
     return log:warn("Sending of code has been disabled")
   end
 
-  local context = get_context(api.nvim_get_current_buf(), args)
+  local context = get_context({ bufnr = api.nvim_get_current_buf(), args = args })
   local content = table.concat(context.lines, "\n")
 
   local chat = CodeCompanion.last_chat()
@@ -143,7 +154,7 @@ CodeCompanion.chat = function(args)
   local acp_command
   local adapter
   local messages = args.messages or {}
-  local context = args.context or get_context(api.nvim_get_current_buf(), args)
+  local context = args.context or get_context({ bufnr = api.nvim_get_current_buf(), args = args })
 
   -- Set the adapter and model if provided
   if args.params and args.params.adapter then
@@ -204,7 +215,7 @@ end
 ---@return nil
 CodeCompanion.sessions = function()
   return require("codecompanion.interactions.chat.sessions").select({
-    buffer_context = get_context(api.nvim_get_current_buf()),
+    buffer_context = get_context({ bufnr = api.nvim_get_current_buf() }),
   })
 end
 
@@ -219,7 +230,7 @@ end
 ---Create a cmd
 ---@return nil
 CodeCompanion.cmd = function(args)
-  local context = get_context(api.nvim_get_current_buf(), args)
+  local context = get_context({ bufnr = api.nvim_get_current_buf(), args = args })
 
   local command = require("codecompanion.interactions.cmd").new({
     buffer_context = context,
@@ -290,7 +301,7 @@ CodeCompanion.toggle_chat = function(args)
   return require("codecompanion.interactions.chat").toggle({
     params = args and args.params,
     window_opts = args and args.window_opts,
-    context = get_context(api.nvim_get_current_buf()),
+    context = get_context({ bufnr = api.nvim_get_current_buf() }),
   })
 end
 
@@ -360,7 +371,7 @@ CodeCompanion.cli = function(prompt_or_opts, opts)
 
   local context
   if prompt then
-    context = get_context(api.nvim_get_current_buf(), opts.args)
+    context = get_context({ bufnr = api.nvim_get_current_buf(), args = opts.args })
   end
 
   local cli = require("codecompanion.interactions.cli")
@@ -432,7 +443,7 @@ end
 ---@param args table
 ---@return nil
 CodeCompanion.actions = function(args)
-  local context = get_context(api.nvim_get_current_buf(), args)
+  local context = get_context({ bufnr = api.nvim_get_current_buf(), args = args })
   return require("codecompanion.action_palette").launch(context, args)
 end
 
@@ -494,11 +505,11 @@ CodeCompanion.version = function()
 end
 
 ---Handle adapter configuration merging
----@param adapter_type string
----@param opts table
+---@param opts { adapter_type: string, adapters?: table }
 ---@return nil
-local function adapter_config(adapter_type, opts)
-  if opts and opts.adapters and opts.adapters[adapter_type] then
+local function adapter_config(opts)
+  local adapter_type = opts.adapter_type
+  if opts.adapters and opts.adapters[adapter_type] then
     if config.adapters[adapter_type].opts.show_presets then
       local adapters_util = require("codecompanion.adapters.utils")
       adapters_util.extend(config.adapters[adapter_type], opts.adapters[adapter_type])
@@ -518,8 +529,8 @@ CodeCompanion.setup = function(opts)
   -- Setup the plugin's config
   config.setup(opts)
 
-  adapter_config("acp", opts)
-  adapter_config("http", opts)
+  adapter_config({ adapter_type = "acp", adapters = opts.adapters })
+  adapter_config({ adapter_type = "http", adapters = opts.adapters })
 
   local cmds = require("codecompanion.commands")
   for _, cmd in ipairs(cmds) do
@@ -575,7 +586,7 @@ CodeCompanion.setup = function(opts)
         end
         local chat = CodeCompanion.last_chat()
         if chat and chat.ui:is_visible_non_curtab() then
-          chat.buffer_context = get_context(args.buf)
+          chat.buffer_context = get_context({ bufnr = args.buf })
           vim.schedule(function()
             CodeCompanion.close_last_chat()
             chat.ui:open({ toggled = true })

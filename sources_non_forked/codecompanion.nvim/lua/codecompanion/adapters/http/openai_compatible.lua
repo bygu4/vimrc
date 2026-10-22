@@ -4,11 +4,11 @@ It is simply provided as an example for how you can connect an OpenAI compatible
 to CodeCompanion via an adapter. Send any questions or queries to the discussions.
 --]]
 
-local Curl = require("plenary.curl")
+local Curl = require("codecompanion.utils.curl")
 local adapter_utils = require("codecompanion.adapters.utils")
 local config = require("codecompanion.config")
 local log = require("codecompanion.utils.log")
-local openai = require("codecompanion.adapters.http.openai")
+local openai = require("codecompanion.adapters.http.openai_legacy")
 
 local _cache_expires
 local _cached_models
@@ -44,22 +44,18 @@ local function get_models(self, opts)
 
   local headers = adapter_utils.set_env_vars(adapter, adapter.headers) or {}
 
-  local ok, response, json
-
-  ok, response = pcall(function()
-    return Curl.get(url, {
-      sync = true,
-      headers = headers,
-      insecure = config.adapters.http.opts.allow_insecure,
-      proxy = config.adapters.http.opts.proxy,
-    })
-  end)
-  if not ok then
-    log:error("Could not get the OpenAI compatible models from " .. url .. ".\nError: %s", response)
+  local response, err = Curl.get_sync({
+    url = url,
+    headers = headers,
+    insecure = config.adapters.http.opts.allow_insecure,
+    proxy = config.adapters.http.opts.proxy,
+  })
+  if not response then
+    log:error("Could not get the OpenAI compatible models from " .. url .. ".\nError: %s", err.message)
     return {}
   end
 
-  ok, json = pcall(vim.json.decode, response.body)
+  local ok, json = pcall(vim.json.decode, response.body)
   if not ok then
     log:error("Could not parse the response from " .. url)
     return {}
@@ -127,9 +123,6 @@ return {
     end,
     chat_output = function(self, data, tools)
       return openai.handlers.chat_output(self, data, tools)
-    end,
-    inline_output = function(self, data, context)
-      return openai.handlers.inline_output(self, data, context)
     end,
     tools = {
       format_tool_calls = function(self, tools)

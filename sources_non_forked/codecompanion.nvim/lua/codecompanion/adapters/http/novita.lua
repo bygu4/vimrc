@@ -1,8 +1,8 @@
-local Curl = require("plenary.curl")
+local Curl = require("codecompanion.utils.curl")
 local adapter_utils = require("codecompanion.adapters.utils")
 local config = require("codecompanion.config")
 local log = require("codecompanion.utils.log")
-local openai = require("codecompanion.adapters.http.openai")
+local openai = require("codecompanion.adapters.http.openai_legacy")
 
 local _cache_expires
 local _cached_models
@@ -18,15 +18,13 @@ local function get_models(self, opts)
 
   local url = "https://api.novita.ai/v3/openai/models"
 
-  local ok, response = pcall(function()
-    return Curl.get(url, {
-      sync = true,
-      insecure = config.adapters.http.opts.allow_insecure,
-      proxy = config.adapters.http.opts.proxy,
-    })
-  end)
-  if not ok then
-    log:error("Could not get the Novita models from " .. url .. "\nError: %s", response)
+  local response, err = Curl.get_sync({
+    url = url,
+    insecure = config.adapters.http.opts.allow_insecure,
+    proxy = config.adapters.http.opts.proxy,
+  })
+  if not response then
+    log:error("Could not get the Novita models from " .. url .. "\nError: %s", err.message)
     return {}
   end
 
@@ -128,9 +126,6 @@ return {
         return openai.handlers.tools.output_response(self, tool_call, output)
       end,
     },
-    inline_output = function(self, data, context)
-      return openai.handlers.inline_output(self, data, context)
-    end,
     on_exit = function(self, data)
       return openai.handlers.on_exit(self, data)
     end,
